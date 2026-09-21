@@ -16,17 +16,20 @@ exports.askAssistant = async (req, res) => {
     // 1. Gather Real Data Context from MongoDB
     const activeStations = await Station.find({ status: { $in: ['operational', 'active'] } }).lean();
     
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0,0,0,0);
-    
-    const transactions = await Transaction.aggregate([
-      { $match: { user: req.user._id, status: 'completed', createdAt: { $gte: startOfMonth } } },
-      { $group: { _id: null, total: { $sum: '$totalAmount' }, kg: { $sum: '$hydrogenDispensed' } } }
-    ]);
-    
-    const totalSpend = transactions.length > 0 ? transactions[0].total : 0;
-    const totalKg = transactions.length > 0 ? transactions[0].kg : 0;
+    let totalSpend = 0;
+    let totalKg = 0;
+    if (req.user?._id) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0,0,0,0);
+      
+      const transactions = await Transaction.aggregate([
+        { $match: { user: req.user._id, status: 'completed', createdAt: { $gte: startOfMonth } } },
+        { $group: { _id: null, total: { $sum: '$totalAmount' }, kg: { $sum: '$hydrogenDispensed' } } }
+      ]);
+      totalSpend = transactions.length > 0 ? transactions[0].total : 0;
+      totalKg = transactions.length > 0 ? transactions[0].kg : 0;
+    }
 
     // 2. Try processing with LLM if API Key is configured
     if (process.env.GEMINI_API_KEY) {

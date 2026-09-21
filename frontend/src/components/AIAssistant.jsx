@@ -36,7 +36,8 @@ export default function AIAssistant() {
 
     try {
       const res = await api.post('/ai/refueling-assistant', { message: text });
-      const { reply, structuredData } = res.data.data;
+      const reply = res.data?.data?.reply || res.data?.reply || "I am online and ready to assist you with refueling questions.";
+      const structuredData = res.data?.data?.structuredData || res.data?.structuredData || null;
       
       const assistantMsg = { 
         role: 'assistant', 
@@ -46,7 +47,12 @@ export default function AIAssistant() {
       
       setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting to the Aurora network right now." }]);
+      console.error('AI assistant error:', err);
+      const serverMsg = err.response?.data?.message;
+      const fallbackContent = serverMsg 
+        ? `Aurora Assistant: ${serverMsg}`
+        : "I'm experiencing a brief network sync delay. You can find active stations directly on your dashboard or try asking again!";
+      setMessages(prev => [...prev, { role: 'assistant', content: fallbackContent }]);
     } finally {
       setLoading(false);
     }
