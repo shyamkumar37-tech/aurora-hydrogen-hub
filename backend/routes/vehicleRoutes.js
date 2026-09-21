@@ -6,6 +6,9 @@ const { protect } = require('../middleware/authMiddleware');
 // Get all user vehicles (supports /my and /)
 const getUserVehicles = async (req, res) => {
   try {
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
     const vehicles = await Vehicle.find({ user: req.user._id }).sort({ isActive: -1, createdAt: -1 });
     res.json(vehicles);
   } catch (error) {

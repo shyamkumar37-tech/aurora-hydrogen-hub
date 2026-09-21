@@ -5,7 +5,10 @@ const mongoose = require('mongoose');
 
 exports.getDashboardAnalytics = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
 
     const totals = await Transaction.aggregate([
       { $match: { user: userId, paymentStatus: 'paid' } },

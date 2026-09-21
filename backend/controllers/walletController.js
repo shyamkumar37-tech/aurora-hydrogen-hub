@@ -251,6 +251,9 @@ exports.razorpayWebhook = async (req, res) => {
 
 exports.getWalletTransactions = async (req, res) => {
   try {
+    if (!req.user?._id) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
     const transactions = await WalletTransaction.find({ user: req.user._id })
       .sort({ createdAt: -1 });
     res.json(transactions);

@@ -166,46 +166,70 @@ export default function CustomerDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [stRes, bkRes, anRes, walRes, vehRes, notifRes] = await Promise.all([
+        const [stResult, bkResult, anResult, walResult, vehResult, notifResult] = await Promise.allSettled([
           api.get('/stations'),
           api.get('/bookings/my'),
           api.get('/analytics/dashboard'),
           api.get('/wallet/transactions'),
           api.get('/vehicles/my'),
-          api.get('/notifications') // Changed from /notifications/my to match controller
+          api.get('/notifications')
         ]);
-        
-        const allStations = stRes.data;
+
+        // Check for 401 unauthorized in any result
+        const unauthorizedResult = [stResult, bkResult, anResult, walResult, vehResult, notifResult].find(
+          r => r.status === 'rejected' && r.reason?.response?.status === 401
+        );
+        if (unauthorizedResult) {
+          logout();
+          toast.error('Session expired. Please log in again.');
+          navigate('/login');
+          return;
+        }
+
+        const allStations = stResult.status === 'fulfilled' ? (stResult.value?.data || []) : [];
         setStations(allStations);
         
         const online = allStations.filter(s => s.status === 'operational' || s.status === 'active').length;
         setOnlineStationsCount(online);
         
-        // Only show active bookings
-        setBookings(bkRes.data.filter(b => b.status === 'pending' || b.status === 'confirmed'));
-        setAnalytics(anRes.data);
-        setWalletTransactions(walRes.data);
-        const vehicleList = Array.isArray(vehRes.data) ? vehRes.data : (vehRes.data ? [vehRes.data] : []);
+        const myBookings = bkResult.status === 'fulfilled' ? (bkResult.value?.data || []) : [];
+        setBookings(myBookings.filter(b => b.status === 'pending' || b.status === 'confirmed'));
+
+        setAnalytics(anResult.status === 'fulfilled' ? anResult.value?.data : {
+          totalHydrogenKg: 0,
+          totalSpend: 0,
+          totalSessions: 0,
+          carbonImpact: { co2SavedKg: 0, treesEquivalent: 0 }
+        });
+
+        setWalletTransactions(walResult.status === 'fulfilled' ? (walResult.value?.data || []) : []);
+        
+        const vehData = vehResult.status === 'fulfilled' ? vehResult.value?.data : [];
+        const vehicleList = Array.isArray(vehData) ? vehData : (vehData ? [vehData] : []);
         const activeVeh = vehicleList.find(v => v.isActive) || vehicleList[0] || null;
         setVehicle(activeVeh);
-        setNotifications(notifRes.data || []);
 
-
+        setNotifications(notifResult.status === 'fulfilled' ? (notifResult.value?.data || []) : []);
 
         try {
           const res = await api.get('/rewards/me');
-          setRewards(res.data.data);
-        } catch(e) { console.warn('Could not fetch rewards'); }
+          setRewards(res.data?.data);
+        } catch(e) { /* ignore secondary widget error */ }
 
         try {
           const res = await api.get('/analytics/carbon-impact');
-          setCarbonImpact(res.data.data);
-        } catch(e) { console.warn('Could not fetch carbon impact'); }
+          setCarbonImpact(res.data?.data);
+        } catch(e) { /* ignore secondary widget error */ }
         
       } catch (err) {
         console.error('Dashboard data error', err);
+        if (err.response?.status === 401) {
+          logout();
+          toast.error('Session expired. Please log in again.');
+          navigate('/login');
+          return;
+        }
         setErrorMsg(err.message || 'Failed to load dashboard data');
-        setLoading(false);
       } finally {
         setLoading(false);
       }
