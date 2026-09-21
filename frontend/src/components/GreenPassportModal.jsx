@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ShieldCheck, Download, Printer, Leaf, Sun, Wind, Droplets, Award, FileText, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../api/api';
 
 export default function GreenPassportModal({ user, totalHydrogenKg = 48.5, co2SavedKg = 412, onClose }) {
   const [certId] = useState('AUR-ESG-' + Math.floor(100000 + Math.random() * 900000));
@@ -143,8 +144,8 @@ export default function GreenPassportModal({ user, totalHydrogenKg = 48.5, co2Sa
                 type="button"
                 onClick={async () => {
                   try {
-                    const res = await fetch(`http://localhost:5000/api/analytics/verify-certificate/${certId}`);
-                    const data = await res.json();
+                    const res = await api.get(`/analytics/verify-certificate/${certId}`);
+                    const data = res.data;
                     toast.success(`Registry Verified: ${data.status} (${data.standard})`, { icon: '✅' });
                   } catch (e) {
                     toast.success(`Registry Verified: VERIFIED_VALID (ISO-14064 Compliance)`, { icon: '✅' });

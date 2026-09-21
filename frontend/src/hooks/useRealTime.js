@@ -13,7 +13,8 @@ export function useRealTime(token) {
       return;
     }
 
-    const newSocket = io('http://localhost:5000', {
+    const socketUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') : 'http://localhost:5000';
+    const newSocket = io(socketUrl, {
       auth: { token }
     });
 

@@ -1,11 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
-import { io } from 'socket.io-client';
-import { Bell, Check, Trash2 } from 'lucide-react';
-import Button from './ui/Button';
-
-const socket = io('http://localhost:5000');
+import socket from '../socket';
 
 export default function NotificationsWidget() {
   const { user } = useContext(AuthContext);

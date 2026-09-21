@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: aurora-hydrogen-backend
+    runtime: node
+    plan: free
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: RAZORPAY_KEY
+        value: rzp_test_placeholder
+      - key: RAZORPAY_WEBHOOK_SECRET
+        value: secret_placeholder
+      - key: CLIENT_URL
+        value: "*"
+      - key: MONGO_URI
+        sync: false
