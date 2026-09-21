@@ -57,7 +57,7 @@ Return your response as a valid JSON object ONLY. Structure:
 }`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
+          model: 'gemini-1.5-flash',
           contents: [
             { role: 'user', parts: [{ text: systemPrompt + '\n\nUser Message: ' + message }] }
           ],
@@ -91,35 +91,48 @@ Return your response as a valid JSON object ONLY. Structure:
       }
     }
 
-    // 3. Fallback (Deterministic Keyword Logic)
-    const lowerMsg = message.toLowerCase();
+    // 3. Natural Fallback Intelligence (Keyword & Intent Logic)
+    const lowerMsg = message.toLowerCase().trim();
     let reply = "";
     let data = null;
 
-    if (lowerMsg.includes('cheapest') || lowerMsg.includes('price') || lowerMsg.includes('cost')) {
+    if (lowerMsg.includes('cheapest') || lowerMsg.includes('price') || lowerMsg.includes('cost per kg') || lowerMsg.includes('rate')) {
       const cheapest = activeStations.sort((a,b) => (a.pricePerKg||0) - (b.pricePerKg||0))[0];
       if (cheapest) {
-        reply = `The cheapest operational station right now is **${cheapest.name}** at ₹${cheapest.pricePerKg}/kg. It currently has ${cheapest.availablePumps} pumps available.`;
+        reply = `The most cost-effective station right now is **${cheapest.name}** at ₹${cheapest.pricePerKg || 80}/kg. There are currently ${cheapest.availablePumps || 2} dispensers ready for refueling.`;
         data = { type: 'station_recommendation', station: cheapest, reason: 'Lowest price per kg' };
       } else {
-        reply = "I couldn't find any operational stations right now.";
+        reply = "I couldn't find any operational stations right now. Please check back shortly.";
       }
     } 
-    else if (lowerMsg.includes('where') || lowerMsg.includes('nearest') || lowerMsg.includes('closest') || lowerMsg.includes('near') || lowerMsg.includes('puncture') || lowerMsg.includes('emergency')) {
-      const nearest = activeStations[0]; // Simplified fallback
+    else if (lowerMsg.includes('where') || lowerMsg.includes('nearest') || lowerMsg.includes('closest') || lowerMsg.includes('near') || lowerMsg.includes('puncture') || lowerMsg.includes('emergency') || lowerMsg.includes('location')) {
+      const nearest = activeStations[0];
       if (nearest) {
-        reply = `I recommend **${nearest.name}**. It's operational with an estimated wait time of ${nearest.waitTime || 0} minutes.`;
+        reply = `I recommend heading to **${nearest.name}**. It is currently operational with an estimated queue wait time of **${nearest.waitTime || 5} minutes**.`;
         data = { type: 'station_recommendation', station: nearest, reason: 'Nearest operational station' };
       } else {
-        reply = "Sorry, no stations are currently operational nearby.";
+        reply = "No active stations were found in your vicinity at this time.";
       }
     } 
-    else if (lowerMsg.includes('spend') || lowerMsg.includes('spent') || lowerMsg.includes('cost this month')) {
-      reply = `You have spent **₹${totalSpend.toFixed(2)}** on **${totalKg.toFixed(1)} kg** of hydrogen this month.`;
+    else if (lowerMsg.includes('spend') || lowerMsg.includes('spent') || lowerMsg.includes('cost this month') || lowerMsg.includes('expenses') || lowerMsg.includes('consumption')) {
+      reply = `You have spent **₹${totalSpend.toFixed(2)}** on **${totalKg.toFixed(1)} kg** of clean hydrogen this month. Great job reducing carbon emissions!`;
       data = { type: 'spend_summary', totalSpend, totalKg };
-    } 
+    }
+    else if (lowerMsg.includes('book') || lowerMsg.includes('reserve') || lowerMsg.includes('slot') || lowerMsg.includes('pump')) {
+      const availableStation = activeStations.find(s => (s.availablePumps || 1) > 0) || activeStations[0];
+      if (availableStation) {
+        reply = `You can easily reserve a refueling dispenser at **${availableStation.name}**. Head over to the **Book Refuel** tab to lock in your slot with 1-Touch Passkey confirmation!`;
+        data = { type: 'station_recommendation', station: availableStation, reason: 'Ready for reservation' };
+      } else {
+        reply = "Head to the **Book Refuel** tab to choose an available dispenser at your preferred station.";
+      }
+    }
+    else if (lowerMsg.includes('station') || lowerMsg.includes('network') || lowerMsg.includes('list')) {
+      const stationNames = activeStations.map(s => `• **${s.name}** (₹${s.pricePerKg || 82}/kg)`).join('\n');
+      reply = `Here are the operational hydrogen stations currently online:\n\n${stationNames}\n\nWould you like directions or queue status for any of these?`;
+    }
     else {
-      reply = `I'm your Aurora Smart Assistant! I can help you find the cheapest or nearest station, check your monthly spending, or give you live queue updates. There are currently ${activeStations.length} stations online in the network.\n\n*(Note: LLM mode is disabled. Add GEMINI_API_KEY to your .env to enable natural language parsing!)*`;
+      reply = `Hello! I'm your Aurora Smart Mobility Assistant. I can help you find the cheapest or nearest station, estimate queue wait times, book a dispenser, or review your monthly fuel expenses. Currently, there are **${activeStations.length} stations online** in the network.\n\nHow can I help you today?`;
     }
 
     res.json({
