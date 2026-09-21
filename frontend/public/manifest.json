@@ -1,0 +1,17 @@
+{
+  "short_name": "Aurora H2",
+  "name": "Aurora Hydrogen Dispensing Network",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#030306",
+  "theme_color": "#06b6d4",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Next-generation 700-bar and cryogenic hydrogen fueling network for zero-emission mobility."
+}
