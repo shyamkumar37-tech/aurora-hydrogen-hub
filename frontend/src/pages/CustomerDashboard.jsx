@@ -462,7 +462,7 @@ export default function CustomerDashboard() {
               Your refueling network is ready.
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             
             {/* Voice AI Button */}
             <button
@@ -472,18 +472,18 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(6, 182, 212, 0.4)',
                 color: '#22d3ee',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer',
                 boxShadow: '0 0 16px rgba(6, 182, 212, 0.2)'
               }}
               title="Activate Hands-Free In-Car Voice Copilot"
             >
-              <Mic size={15} color="#22d3ee" />
+              <Mic size={14} color="#22d3ee" />
               <span>Voice AI</span>
             </button>
 
@@ -495,17 +495,17 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(245, 158, 11, 0.35)',
                 color: '#f59e0b',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer'
               }}
               title="Access Zero-Connectivity Digital Fueling Pass"
             >
-              <WifiOff size={15} color="#f59e0b" />
+              <WifiOff size={14} color="#f59e0b" />
               <span>Offline Pass</span>
             </button>
 
@@ -517,17 +517,17 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(59, 130, 246, 0.35)',
                 color: '#60a5fa',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer'
               }}
               title="Manage Commercial Vehicle Fleet & Driver Limits"
             >
-              <Truck size={15} color="#60a5fa" />
+              <Truck size={14} color="#60a5fa" />
               <span>Fleet Hub</span>
             </button>
 
@@ -539,17 +539,17 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(16, 185, 129, 0.35)',
                 color: '#10b981',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer'
               }}
               title="View Verifiable Zero-Emissions Provenance & CO2 Abatement"
             >
-              <Leaf size={15} color="#10b981" />
+              <Leaf size={14} color="#10b981" />
               <span>ESG Passport</span>
             </button>
 
@@ -561,17 +561,17 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(56, 189, 248, 0.35)',
                 color: '#38bdf8',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer'
               }}
               title="Launch Interactive 3D Tank & Cryogenic Visualizer"
             >
-              <Box size={15} color="#38bdf8" />
+              <Box size={14} color="#38bdf8" />
               <span>3D Twin</span>
             </button>
 
@@ -583,17 +583,17 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(168, 85, 247, 0.35)',
                 color: '#c084fc',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer'
               }}
               title="Scan Vehicle License Plate via Computer Vision"
             >
-              <Scan size={15} color="#c084fc" />
+              <Scan size={14} color="#c084fc" />
               <span>Plate AI</span>
             </button>
 
@@ -605,60 +605,81 @@ export default function CustomerDashboard() {
                 border: '1px solid rgba(6, 182, 212, 0.4)',
                 color: '#22d3ee',
                 borderRadius: '10px',
-                padding: '8px 14px',
+                padding: '7px 11px',
                 fontWeight: '700',
-                fontSize: '13px',
+                fontSize: '12.5px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
+                gap: '5px',
                 cursor: 'pointer',
                 boxShadow: '0 0 10px rgba(6, 182, 212, 0.15)'
               }}
               title="Enroll Optical Fingerprint Scanner / Passkey"
             >
-              <Fingerprint size={15} color="#22d3ee" />
+              <Fingerprint size={14} color="#22d3ee" />
               <span>Passkey</span>
             </button>
 
-            <div style={{ position: 'relative' }}>
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)}
-                className="btn" 
-                style={{ background: '#101112', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-main)', position: 'relative' }}
-              >
-                <Bell size={16} />
-                {unreadCount > 0 && (
-                  <div style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', width: 16, height: 16, borderRadius: '50%', fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 0 8px rgba(239,68,68,0.6)' }}>
-                    {unreadCount}
+            {/* Utility Controls Group: Bell & Logout Locked Together */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+              <div style={{ position: 'relative' }}>
+                <button 
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="btn" 
+                  style={{ background: '#101112', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-main)', position: 'relative', padding: '7px 11px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  title="Notifications"
+                >
+                  <Bell size={15} />
+                  {unreadCount > 0 && (
+                    <div style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', width: 16, height: 16, borderRadius: '50%', fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', boxShadow: '0 0 8px rgba(239,68,68,0.6)' }}>
+                      {unreadCount}
+                    </div>
+                  )}
+                </button>
+
+                {showNotifications && (
+                  <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '320px', background: '#0A0A0B', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', zIndex: 50, boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>Notifications</h3>
+                    </div>
+                    
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
+                      {notifications.length > 0 ? (
+                        notifications.map((notification) => (
+                          <div key={notification._id} onClick={() => !notification.read && handleMarkAsRead(notification._id)} style={{ padding: '12px', background: notification.read ? 'transparent' : 'rgba(0, 240, 255, 0.05)', border: `1px solid ${notification.read ? 'rgba(255,255,255,0.05)' : 'rgba(0, 240, 255, 0.2)'}`, borderRadius: '8px', cursor: notification.read ? 'default' : 'pointer' }}>
+                            <div style={{ fontSize: '0.875rem', fontWeight: notification.read ? 'normal' : '500', marginBottom: '4px' }}>{notification.message}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(notification.createdAt).toLocaleString()}</div>
+                          </div>
+                        ))
+                      ) : (
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '16px 0' }}>You're all caught up!</div>
+                      )}
+                    </div>
                   </div>
                 )}
+              </div>
+
+              <button 
+                onClick={handleLogout} 
+                className="btn" 
+                style={{ 
+                  background: '#101112', 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  color: 'var(--text-main)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '7px 12px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  whiteSpace: 'nowrap'
+                }}
+                title="Sign out of Aurora Hub"
+              >
+                <LogOut size={14} />
+                <span>Logout</span>
               </button>
-
-              {showNotifications && (
-                <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', width: '320px', background: '#0A0A0B', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '16px', zIndex: 50, boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '500' }}>Notifications</h3>
-                  </div>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '300px', overflowY: 'auto' }}>
-                    {notifications.length > 0 ? (
-                      notifications.map((notification) => (
-                        <div key={notification._id} onClick={() => !notification.read && handleMarkAsRead(notification._id)} style={{ padding: '12px', background: notification.read ? 'transparent' : 'rgba(0, 240, 255, 0.05)', border: `1px solid ${notification.read ? 'rgba(255,255,255,0.05)' : 'rgba(0, 240, 255, 0.2)'}`, borderRadius: '8px', cursor: notification.read ? 'default' : 'pointer' }}>
-                          <div style={{ fontSize: '0.875rem', fontWeight: notification.read ? 'normal' : '500', marginBottom: '4px' }}>{notification.message}</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(notification.createdAt).toLocaleString()}</div>
-                        </div>
-                      ))
-                    ) : (
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem', textAlign: 'center', padding: '16px 0' }}>You're all caught up!</div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
-
-            <button onClick={handleLogout} className="btn" style={{ background: '#101112', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text-main)' }}>
-              <LogOut size={16} style={{ marginRight: '8px' }}/> Logout
-            </button>
           </div>
         </div>
 
