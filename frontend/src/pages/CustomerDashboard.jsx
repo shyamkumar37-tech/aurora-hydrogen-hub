@@ -31,6 +31,7 @@ import TankDigitalTwin3D from '../components/TankDigitalTwin3D';
 import PlateVisionScanner from '../components/PlateVisionScanner';
 import PasskeyScannerModal from '../components/PasskeyScannerModal';
 import InstallAppBanner from '../components/InstallAppBanner';
+import FloatingVoiceOrb from '../components/FloatingVoiceOrb';
 import { registerPasskey } from '../utils/webAuthnUtils';
 
 export default function CustomerDashboard() {
@@ -1658,6 +1659,9 @@ export default function CustomerDashboard() {
           }).catch(()=>{});
         }}
       />
+
+      {/* Floating Cybernetic Voice AI Orb */}
+      <FloatingVoiceOrb onTriggerVoice={() => setShowVoiceAssistant(true)} />
 
       {/* Offline Digital Fuel Pass Modal */}
       <OfflineFuelPassModal
