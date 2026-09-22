@@ -95,7 +95,7 @@ export default function CustomerDashboard() {
     if (searchQuery && !s.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (activeFilter === 'Available now') {
       if (s.status !== 'operational' && s.status !== 'active') return false;
-      if (!s.availablePumps || s.availablePumps <= 0) return false;
+      if (s.availablePumps !== undefined && s.availablePumps <= 0 && s.totalPumps > 0) return false;
     }
     if (activeFilter === 'Open 24/7') {
       // Mock logic: assume all are 24/7 unless specified

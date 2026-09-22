@@ -5,7 +5,15 @@ const Inventory = require('../models/Inventory');
 exports.getStations = async (req, res) => {
   try {
     const stations = await Station.find({});
-    res.json(stations);
+    const enriched = await Promise.all(stations.map(async (st) => {
+      const stObj = st.toObject();
+      const totalPumps = await Dispenser.countDocuments({ station: st._id });
+      const availablePumps = await Dispenser.countDocuments({ station: st._id, status: 'available' });
+      stObj.totalPumps = totalPumps > 0 ? totalPumps : (stObj.totalPumps || 2);
+      stObj.availablePumps = totalPumps > 0 ? availablePumps : (stObj.availablePumps || 2);
+      return stObj;
+    }));
+    res.json(enriched);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
   }

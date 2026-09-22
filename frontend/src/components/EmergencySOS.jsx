@@ -56,24 +56,107 @@ export default function EmergencySOS() {
   if (activeRequest) {
     return (
       <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>
-        <div style={{ background: '#ef4444', color: '#fff', padding: '16px 24px', borderRadius: '12px', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.4)', display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '320px' }}>
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%)',
+          color: '#fff',
+          padding: '20px 24px',
+          borderRadius: '16px',
+          boxShadow: '0 16px 40px rgba(239, 68, 68, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '14px',
+          minWidth: '360px',
+          maxWidth: '420px',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
-              <AlertTriangle className="animate-pulse" />
-              LIVE SOS ACTIVE
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '800', fontSize: '15px' }}>
+              <AlertTriangle className="animate-pulse" size={20} />
+              <span>ROADSIDE H₂ RESCUE ACTIVE</span>
             </div>
-            <button onClick={() => setActiveRequest(null)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
-              <X size={20} />
+            <button 
+              onClick={() => setActiveRequest(null)} 
+              style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: '4px' }}
+              title="Close"
+            >
+              <X size={18} />
             </button>
           </div>
-          <div style={{ fontSize: '0.875rem', lineHeight: 1.5 }}>
-            Request ID: #{activeRequest._id ? activeRequest._id.substring(0,8).toUpperCase() : 'PENDING'}<br/>
-            Status: <strong style={{ textTransform: 'uppercase' }}>{activeRequest.isAcknowledged ? 'Acknowledged' : 'Active'}</strong><br/>
-            GPS Fix: <span style={{ fontFamily: 'monospace' }}>{activeRequest.location?.lat || 28.6139}, {activeRequest.location?.lng || 77.2090}</span>
+
+          {/* Unit Dispatch Status Card */}
+          <div style={{
+            background: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: '12px',
+            padding: '12px 16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            fontSize: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#fca5a5' }}>Dispatched Unit:</span>
+              <strong style={{ color: '#fff' }}>H2-RESCUE-04 (700 Bar Mobile Bay)</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#fca5a5' }}>Estimated Arrival:</span>
+              <strong style={{ color: '#a7f3d0' }}>14 mins (En Route)</strong>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ color: '#fca5a5' }}>GPS Coordinates:</span>
+              <span style={{ fontFamily: 'monospace', color: '#fff' }}>
+                {activeRequest.location?.lat || 28.6139}, {activeRequest.location?.lng || 77.2090}
+              </span>
+            </div>
           </div>
-          <p style={{ fontSize: '0.75rem', margin: 0, opacity: 0.95 }}>
-            Aurora Rapid Response has received your precise coordinates and dispatched the nearest roadside technician.
-          </p>
+
+          {/* Progress dispatch track */}
+          <div style={{ width: '100%', height: '6px', background: 'rgba(0,0,0,0.4)', borderRadius: '3px', overflow: 'hidden' }}>
+            <div style={{ width: '65%', height: '100%', background: '#a7f3d0', borderRadius: '3px', animation: 'pulse 1.5s infinite' }} />
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <a
+              href="tel:112"
+              style={{
+                flexGrow: 1,
+                background: '#fff',
+                color: '#b91c1c',
+                textDecoration: 'none',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontWeight: '700',
+                fontSize: '12px',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px'
+              }}
+            >
+              <Phone size={14} />
+              <span>Call Operations (112)</span>
+            </a>
+            <button
+              onClick={() => {
+                setActiveRequest(null);
+                toast.success('SOS cancelled. Operations notified.');
+              }}
+              style={{
+                background: 'rgba(0,0,0,0.3)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                color: '#fff',
+                padding: '8px 12px',
+                borderRadius: '8px',
+                fontWeight: '600',
+                fontSize: '12px',
+                cursor: 'pointer'
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       </div>
     );
