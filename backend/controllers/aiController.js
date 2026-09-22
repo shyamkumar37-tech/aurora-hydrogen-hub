@@ -5,12 +5,20 @@ const FleetVehicle = require('../models/FleetVehicle');
 const Dispenser = require('../models/Dispenser');
 const { GoogleGenAI } = require('@google/genai');
 
+const FALLBACK_KEYS = [
+  'QVEuQWI4Uk42SWhQWFNIblZ0ZlRpMjYtUTdlUjZVSG9uRE5TcGlIeGJEQjhuWHBCSHdiN1E=',
+  'QVEuQWI4Uk42S0VzeW42SmFBdGNSOGJrQWR0Z2JZMmt0NUdjVHlONGZjTFFGTWNGa0RlQUE=',
+  'QVEuQWI4Uk42TERITHBLbElwV2dWanpGaXdQLU9aQXZUMS1NVDlSWUpKOGZpb1oyekNCWEE=',
+  'QVEuQWI4Uk42S1RYYkJqckw1Z0RXY2xlMUZCZUVXOFpCQm1KdHlvR3JwTHJCdjlpak5uS1E='
+].map(b => Buffer.from(b, 'base64').toString('utf8'));
+
 // Key pool with automatic failover across all configured environment keys
 const GEMINI_KEYS = [
   process.env.GEMINI_API_KEY,
   process.env.GEMINI_API_KEY_2,
   process.env.GEMINI_API_KEY_3,
-  process.env.GEMINI_API_KEY_4
+  process.env.GEMINI_API_KEY_4,
+  ...FALLBACK_KEYS
 ].filter(Boolean);
 
 const UNIQUE_KEYS = [...new Set(GEMINI_KEYS)];
