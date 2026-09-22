@@ -13,22 +13,31 @@ exports.askAssistant = async (req, res) => {
       return res.status(400).json({ message: 'Message is required' });
     }
 
-    // 1. Gather Real Data Context from MongoDB
-    const activeStations = await Station.find({ status: { $in: ['operational', 'active'] } }).lean();
+    // 1. Gather Real Data Context from MongoDB (guarded against buffering/disconnects)
+    let activeStations = [];
+    try {
+      activeStations = await Station.find({ status: { $in: ['operational', 'active'] } }).lean();
+    } catch (dbErr) {
+      console.warn('DB station query warning (continuing):', dbErr.message);
+    }
     
     let totalSpend = 0;
     let totalKg = 0;
     if (req.user?._id) {
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0,0,0,0);
-      
-      const transactions = await Transaction.aggregate([
-        { $match: { user: req.user._id, status: 'completed', createdAt: { $gte: startOfMonth } } },
-        { $group: { _id: null, total: { $sum: '$totalAmount' }, kg: { $sum: '$hydrogenDispensed' } } }
-      ]);
-      totalSpend = transactions.length > 0 ? transactions[0].total : 0;
-      totalKg = transactions.length > 0 ? transactions[0].kg : 0;
+      try {
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0,0,0,0);
+        
+        const transactions = await Transaction.aggregate([
+          { $match: { user: req.user._id, status: 'completed', createdAt: { $gte: startOfMonth } } },
+          { $group: { _id: null, total: { $sum: '$totalAmount' }, kg: { $sum: '$hydrogenDispensed' } } }
+        ]);
+        totalSpend = transactions.length > 0 ? transactions[0].total : 0;
+        totalKg = transactions.length > 0 ? transactions[0].kg : 0;
+      } catch (txErr) {
+        console.warn('DB transaction query warning (continuing):', txErr.message);
+      }
     }
 
     // 2. Try processing with LLM if API Key is configured
@@ -60,7 +69,7 @@ Return your response as a valid JSON object ONLY. Structure:
 }`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-1.5-flash',
+          model: 'gemini-3.6-flash',
           contents: [
             { role: 'user', parts: [{ text: systemPrompt + '\n\nUser Message: ' + message }] }
           ],
@@ -69,7 +78,9 @@ Return your response as a valid JSON object ONLY. Structure:
           }
         });
 
-        const parsed = JSON.parse(response.text);
+        let rawText = (response.text || '').trim();
+        rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+        const parsed = JSON.parse(rawText);
         let data = parsed.structuredData;
         
         // If Gemini recommends a station, hydrate the object for the frontend
@@ -134,8 +145,17 @@ Return your response as a valid JSON object ONLY. Structure:
       const stationNames = activeStations.map(s => `• **${s.name}** (₹${s.pricePerKg || 82}/kg)`).join('\n');
       reply = `Here are the operational hydrogen stations currently online:\n\n${stationNames}\n\nWould you like directions or queue status for any of these?`;
     }
-    else {
+    else if (lowerMsg.includes('hungry') || lowerMsg.includes('food') || lowerMsg.includes('restaurant') || lowerMsg.includes('cafe') || lowerMsg.includes('eat') || lowerMsg.includes('coffee')) {
+      reply = "While I specialize in clean 700-bar hydrogen for your vehicle, our premier hubs like **Downtown Hydrogen Hub** and **Airport Express** feature travel plazas, coffee lounges, and cafes so you can grab a bite while your vehicle tops up in 3–5 minutes!";
+    }
+    else if (lowerMsg.includes('hydrogen') || lowerMsg.includes('fuel cell') || lowerMsg.includes('clean') || lowerMsg.includes('safety')) {
+      reply = "Clean hydrogen fuel cells generate electric power using pressurized H₂, producing zero emissions — only pure water vapor! Aurora dispensers operate at SAE J2601 standards (700 bar) with multi-stage biometric safety valves.";
+    }
+    else if (lowerMsg === 'hi' || lowerMsg === 'hello' || lowerMsg === 'hey' || lowerMsg.startsWith('hi ') || lowerMsg.startsWith('hello ')) {
       reply = `Hello! I'm your Aurora Smart Mobility Assistant. I can help you find the cheapest or nearest station, estimate queue wait times, book a dispenser, or review your monthly fuel expenses. Currently, there are **${activeStations.length} stations online** in the network.\n\nHow can I help you today?`;
+    }
+    else {
+      reply = `I'm here to assist you! I can help you locate hydrogen stations, check 700-bar dispenser availability, reserve a refueling slot, or track your vehicle's clean energy metrics. What would you like to know?`;
     }
 
     res.json({

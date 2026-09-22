@@ -175,7 +175,7 @@ export default function Login() {
     return (
       import.meta.env.VITE_GOOGLE_CLIENT_ID ||
       localStorage.getItem('AURORA_GOOGLE_CLIENT_ID') ||
-      ''
+      '325911380898-mjfr8421koubev61n662qf9vpelp6gha.apps.googleusercontent.com'
     ).trim();
   };
 
