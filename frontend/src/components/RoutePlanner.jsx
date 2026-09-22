@@ -60,11 +60,18 @@ const PRESET_ROUTES = [
 function MapBoundsUpdater({ bounds }) {
   const map = useMap();
   useEffect(() => {
-    if (bounds && bounds.length > 1) {
+    const timer = setTimeout(() => {
       try {
-        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+        map.invalidateSize();
+        if (bounds && Array.isArray(bounds) && bounds.length > 1) {
+          const validCoords = bounds.filter(c => Array.isArray(c) && c.length === 2 && !isNaN(c[0]) && !isNaN(c[1]));
+          if (validCoords.length > 1) {
+            map.fitBounds(validCoords, { padding: [40, 40], maxZoom: 12 });
+          }
+        }
       } catch (e) {}
-    }
+    }, 100);
+    return () => clearTimeout(timer);
   }, [bounds, map]);
   return null;
 }
@@ -553,15 +560,17 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
             </div>
 
             {/* Suggested Waypoints */}
-            {activeRoute.suggestedStops.map((stopName, idx) => {
+            {activeRoute.suggestedStops.map((stopItem, idx) => {
+              const stopName = typeof stopItem === 'string' ? stopItem : (stopItem.name || `Waypoint #${idx + 1}`);
               const isReserved = reservedStops.includes(stopName);
+              const pressure = typeof stopItem === 'object' ? (stopItem.pressure || '700 bar') : '700 bar';
               return (
-                <div key={stopName} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isReserved ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isReserved ? '#10b981' : 'rgba(255,255,255,0.06)'}`, borderRadius: '12px', padding: '12px 16px', marginLeft: '14px' }}>
+                <div key={stopName || idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: isReserved ? 'rgba(16, 185, 129, 0.08)' : 'rgba(255,255,255,0.03)', border: `1px solid ${isReserved ? '#10b981' : 'rgba(255,255,255,0.06)'}`, borderRadius: '12px', padding: '12px 16px', marginLeft: '14px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <MapPin size={16} color={isReserved ? '#10b981' : '#06b6d4'} />
                     <div>
                       <span style={{ fontSize: '13px', fontWeight: '600', color: '#ffffff' }}>{stopName}</span>
-                      <span style={{ fontSize: '11px', color: '#71717a', display: 'block' }}>700-Bar Ultra-Fast Bay • 0 Wait Time</span>
+                      <span style={{ fontSize: '11px', color: '#71717a', display: 'block' }}>{pressure} Ultra-Fast Bay • 0 Wait Time</span>
                     </div>
                   </div>
                   {isReserved ? (
