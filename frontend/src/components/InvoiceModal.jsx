@@ -1,9 +1,14 @@
-import React, { useRef } from 'react';
-import { Printer, Download, X, ShieldCheck, CheckCircle2, FileText, Building, Fuel } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Printer, Download, X, ShieldCheck, CheckCircle2, FileText, Building, Fuel, Loader2 } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import toast from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export default function InvoiceModal({ isOpen, onClose, data }) {
+  const invoiceRef = useRef(null);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
   if (!isOpen || !data) return null;
 
   const invoiceNumber = data.invoiceNumber || `INV-H2-${Date.now().toString().slice(-6)}`;
@@ -26,6 +31,41 @@ export default function InvoiceModal({ isOpen, onClose, data }) {
   const handlePrint = () => {
     window.print();
     toast.success('Tax invoice ready for download/printing');
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!invoiceRef.current) return;
+    try {
+      setDownloadingPdf(true);
+      toast.loading('Generating high-resolution PDF...', { id: 'pdf-toast' });
+      
+      const canvas = await html2canvas(invoiceRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`Aurora_Invoice_${invoiceNumber}.pdf`);
+
+      toast.success(`Downloaded Aurora_Invoice_${invoiceNumber}.pdf`, { id: 'pdf-toast', icon: '📄' });
+    } catch (err) {
+      console.error('PDF generation error:', err);
+      toast.error('Failed to generate PDF. You can still use the Print button.', { id: 'pdf-toast' });
+    } finally {
+      setDownloadingPdf(false);
+    }
   };
 
   return (
@@ -54,15 +94,37 @@ export default function InvoiceModal({ isOpen, onClose, data }) {
               <span style={{ fontSize: '12px', color: '#94a3b8' }}>GST / VAT Compliant Fueling Receipt</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button
-              onClick={handlePrint}
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              id="btn-download-pdf-invoice"
               style={{
                 background: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
                 border: 'none',
                 color: '#ffffff',
                 borderRadius: '10px',
                 padding: '8px 16px',
+                cursor: downloadingPdf ? 'not-allowed' : 'pointer',
+                fontWeight: '600',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 10px rgba(6, 182, 212, 0.3)'
+              }}
+            >
+              {downloadingPdf ? <Loader2 size={15} className="spin" /> : <Download size={15} />}
+              <span>{downloadingPdf ? 'Generating...' : 'Download PDF'}</span>
+            </button>
+            <button
+              onClick={handlePrint}
+              style={{
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                color: '#ffffff',
+                borderRadius: '10px',
+                padding: '8px 14px',
                 cursor: 'pointer',
                 fontWeight: '600',
                 fontSize: '13px',
@@ -72,7 +134,7 @@ export default function InvoiceModal({ isOpen, onClose, data }) {
               }}
             >
               <Printer size={15} />
-              <span>Print / PDF</span>
+              <span>Print</span>
             </button>
             <button
               onClick={onClose}
@@ -93,13 +155,17 @@ export default function InvoiceModal({ isOpen, onClose, data }) {
         </div>
 
         {/* Printable Invoice Container */}
-        <div style={{
-          background: '#ffffff',
-          color: '#0f172a',
-          borderRadius: '16px',
-          padding: '28px',
-          fontFamily: 'Inter, sans-serif'
-        }}>
+        <div 
+          ref={invoiceRef}
+          id="aurora-printable-invoice"
+          style={{
+            background: '#ffffff',
+            color: '#0f172a',
+            borderRadius: '16px',
+            padding: '28px',
+            fontFamily: 'Inter, sans-serif'
+          }}
+        >
           {/* Top Invoice Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #e2e8f0', paddingBottom: '20px', marginBottom: '20px' }}>
             <div>

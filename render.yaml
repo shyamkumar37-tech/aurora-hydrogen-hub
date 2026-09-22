@@ -17,11 +17,16 @@ services:
         generateValue: true
       - key: RAZORPAY_KEY
         value: rzp_test_placeholder
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
       - key: RAZORPAY_WEBHOOK_SECRET
         value: secret_placeholder
+      - key: STRIPE_SECRET_KEY
+        sync: false
       - key: CLIENT_URL
         value: "*"
       - key: MONGO_URI
         sync: false
       - key: GEMINI_API_KEY
         sync: false
+

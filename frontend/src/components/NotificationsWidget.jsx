@@ -1,12 +1,20 @@
 import { useState, useEffect, useContext } from 'react';
+import { Bell, Check, Sparkles, CheckCircle2, Volume2 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
 import socket from '../socket';
+import { 
+  requestNotificationPermission, 
+  sendDesktopNotification, 
+  getNotificationPermission 
+} from '../utils/browserNotification';
+import toast from 'react-hot-toast';
 
 export default function NotificationsWidget() {
   const { user } = useContext(AuthContext);
   const [notifications, setNotifications] = useState([]);
-  const [isOpen, setIsOpen] = useState(true); // Always open in dashboard view for better UX
+  const [isOpen, setIsOpen] = useState(true);
+  const [pushStatus, setPushStatus] = useState(getNotificationPermission());
 
   const fetchNotifications = async () => {
     try {
@@ -24,13 +32,11 @@ export default function NotificationsWidget() {
       const currentUserId = user?._id || user?.id;
       if (data.userId === currentUserId) {
         fetchNotifications();
-        // Web Push native notification
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('Aurora Hydrogen Alert', {
-            body: data.message || 'You have an update on your hydrogen fueling.',
-            icon: '/favicon.svg'
-          });
-        }
+        // Web Push native notification with custom chime
+        sendDesktopNotification('Aurora Hydrogen Alert', {
+          body: data.message || 'You have an update on your hydrogen fueling.',
+          icon: '/favicon.ico'
+        });
       }
     });
 
@@ -39,17 +45,13 @@ export default function NotificationsWidget() {
     };
   }, [user]);
 
-  const requestPushPermission = async () => {
-    if (!('Notification' in window)) {
-      alert('This browser does not support desktop notifications.');
-      return;
-    }
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      new Notification('Aurora Push Enabled', {
-        body: 'Real-time telemetry and station alerts are now activated!',
-        icon: '/favicon.svg'
-      });
+  const handleTogglePush = async () => {
+    const result = await requestNotificationPermission();
+    setPushStatus(result);
+    if (result === 'granted') {
+      toast.success('Desktop Push Alerts Activated!', { icon: '🔔' });
+    } else if (result === 'denied') {
+      toast.error('Push alerts blocked in browser settings.');
     }
   };
 
@@ -85,11 +87,11 @@ export default function NotificationsWidget() {
           )}
         </h3>
         <button
-          onClick={requestPushPermission}
+          onClick={handleTogglePush}
           style={{
-            background: 'rgba(6, 182, 212, 0.1)',
-            border: '1px solid rgba(6, 182, 212, 0.3)',
-            color: 'var(--accent-cyan)',
+            background: pushStatus === 'granted' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(6, 182, 212, 0.1)',
+            border: `1px solid ${pushStatus === 'granted' ? '#10b981' : 'rgba(6, 182, 212, 0.3)'}`,
+            color: pushStatus === 'granted' ? '#10b981' : 'var(--accent-cyan)',
             borderRadius: '8px',
             padding: '4px 10px',
             fontSize: '11px',
@@ -100,8 +102,8 @@ export default function NotificationsWidget() {
             gap: '4px'
           }}
         >
-          <Bell size={12} />
-          <span>Enable Web Push</span>
+          {pushStatus === 'granted' ? <CheckCircle2 size={12} /> : <Bell size={12} />}
+          <span>{pushStatus === 'granted' ? 'Push Alerts Active' : 'Enable Web Push'}</span>
         </button>
       </div>
 

@@ -1,13 +1,116 @@
-import { useState } from 'react';
-import { Navigation, MapPin, ArrowRight, CheckCircle2, Shield, Calendar, Clock, Sparkles } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Navigation, MapPin, ArrowRight, CheckCircle2, Shield, Calendar, Clock, Sparkles, X, Fuel, Layers } from 'lucide-react';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import toast from 'react-hot-toast';
 
 const PRESET_ROUTES = [
-  { id: 'chn-blr', from: 'Chennai', to: 'Bengaluru', fromCoord: [80.2707, 13.0827], toCoord: [77.5946, 12.9716], distanceKm: 346, suggestedStops: ['Vellore Highway Hydrogen Station', 'Kolar Green Power Station'] },
-  { id: 'chn-hyd', from: 'Chennai', to: 'Hyderabad', fromCoord: [80.2707, 13.0827], toCoord: [78.4867, 17.3850], distanceKm: 625, suggestedStops: ['Nellore Solar H2 Station', 'Ongole Express Hub', 'Vijayawada Clean Point'] },
-  { id: 'chn-pdy', from: 'Chennai', to: 'Pondicherry', fromCoord: [80.2707, 13.0827], toCoord: [79.8083, 11.9416], distanceKm: 152, suggestedStops: ['Mahabalipuram Green Bay'] },
-  { id: 'chn-cbe', from: 'Chennai', to: 'Coimbatore', fromCoord: [80.2707, 13.0827], toCoord: [76.9558, 11.0168], distanceKm: 510, suggestedStops: ['Salem Supercharger Hub', 'Erode Highway H2'] }
+  { 
+    id: 'chn-blr', 
+    from: 'Chennai', 
+    to: 'Bengaluru', 
+    fromCoord: [13.0827, 80.2707], 
+    toCoord: [12.9716, 77.5946], 
+    distanceKm: 346, 
+    suggestedStops: [
+      { name: 'Vellore Highway Hydrogen Station', coord: [12.9165, 79.1325], pressure: '700 bar' },
+      { name: 'Kolar Green Power Station', coord: [13.1367, 78.1291], pressure: '700 bar' }
+    ] 
+  },
+  { 
+    id: 'chn-hyd', 
+    from: 'Chennai', 
+    to: 'Hyderabad', 
+    fromCoord: [13.0827, 80.2707], 
+    toCoord: [17.3850, 78.4867], 
+    distanceKm: 625, 
+    suggestedStops: [
+      { name: 'Nellore Solar H2 Station', coord: [14.4426, 79.9865], pressure: '700 bar' },
+      { name: 'Ongole Express Hub', coord: [15.5057, 80.0499], pressure: '350/700 bar' },
+      { name: 'Vijayawada Clean Point', coord: [16.5062, 80.6480], pressure: '700 bar' }
+    ] 
+  },
+  { 
+    id: 'chn-pdy', 
+    from: 'Chennai', 
+    to: 'Pondicherry', 
+    fromCoord: [13.0827, 80.2707], 
+    toCoord: [11.9416, 79.8083], 
+    distanceKm: 152, 
+    suggestedStops: [
+      { name: 'Mahabalipuram Green Bay', coord: [12.6269, 80.1927], pressure: '700 bar' }
+    ] 
+  },
+  { 
+    id: 'chn-cbe', 
+    from: 'Chennai', 
+    to: 'Coimbatore', 
+    fromCoord: [13.0827, 80.2707], 
+    toCoord: [11.0168, 76.9558], 
+    distanceKm: 510, 
+    suggestedStops: [
+      { name: 'Salem Supercharger Hub', coord: [11.6643, 78.1460], pressure: '700 bar' },
+      { name: 'Erode Highway H2', coord: [11.3410, 77.7172], pressure: '700 bar' }
+    ] 
+  }
 ];
+
+// Helper to auto-fit map viewport to route bounds
+function MapBoundsUpdater({ bounds }) {
+  const map = useMap();
+  useEffect(() => {
+    if (bounds && bounds.length > 1) {
+      try {
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 12 });
+      } catch (e) {}
+    }
+  }, [bounds, map]);
+  return null;
+}
+
+// Custom DivIcons
+const createPinIcon = (letter, bg, text = '#000') => {
+  return L.divIcon({
+    className: 'custom-map-pin',
+    html: `<div style="
+      width: 28px; 
+      height: 28px; 
+      border-radius: 50%; 
+      background: ${bg}; 
+      color: ${text}; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      font-weight: 800; 
+      font-size: 12px;
+      box-shadow: 0 0 12px ${bg};
+      border: 2px solid #ffffff;
+    ">${letter}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14]
+  });
+};
+
+const stationPinIcon = L.divIcon({
+  className: 'station-map-pin',
+  html: `<div style="
+    width: 24px; 
+    height: 24px; 
+    border-radius: 50%; 
+    background: #f59e0b; 
+    color: #000; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: 800; 
+    font-size: 11px;
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.8);
+    border: 2px solid #fff;
+  ">⛽</div>`,
+  iconSize: [24, 24],
+  iconAnchor: [12, 12]
+});
 
 export default function RoutePlanner({ activeVehicle, stations = [], onClose, onBookSlot }) {
   const [selectedRouteId, setSelectedRouteId] = useState('chn-blr');
@@ -20,6 +123,9 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
   const [acLoad, setAcLoad] = useState(true);
   const [reservedStops, setReservedStops] = useState([]);
   const [isReserving, setIsReserving] = useState(false);
+  const [routePolyline, setRoutePolyline] = useState([]);
+  const [customOriginCoord, setCustomOriginCoord] = useState(null);
+  const [customDestCoord, setCustomDestCoord] = useState(null);
 
   const tankCapacity = activeVehicle?.tankCapacityKg || 5.6;
   const baseEfficiency = activeVehicle?.efficiencyKgPer100Km || 0.95;
@@ -28,6 +134,55 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
   const currentFuelKg = (tankCapacity * (tankLevelPct / 100)).toFixed(1);
   const currentRangeKm = Math.round((currentFuelKg / effectiveEfficiency) * 100);
   const maxRangeKm = Math.round((tankCapacity / effectiveEfficiency) * 100);
+
+  const activeRoute = useMemo(() => {
+    if (selectedRouteId === 'custom' && customOriginCoord && customDestCoord) {
+      return {
+        id: 'custom',
+        from: originQuery,
+        to: destQuery,
+        fromCoord: customOriginCoord,
+        toCoord: customDestCoord,
+        distanceKm: liveDistanceKm,
+        suggestedStops: [
+          { name: 'Midway Corridor Cryogenic Bay', coord: [(customOriginCoord[0] + customDestCoord[0]) / 2, (customOriginCoord[1] + customDestCoord[1]) / 2], pressure: '700 bar' }
+        ]
+      };
+    }
+    return PRESET_ROUTES.find(r => r.id === selectedRouteId) || PRESET_ROUTES[0];
+  }, [selectedRouteId, customOriginCoord, customDestCoord, originQuery, destQuery, liveDistanceKm]);
+
+  // Update Polyline whenever active route changes
+  useEffect(() => {
+    const fetchRouteGeometry = async () => {
+      const startCoord = activeRoute.fromCoord;
+      const endCoord = activeRoute.toCoord;
+      if (!startCoord || !endCoord) return;
+
+      try {
+        const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startCoord[1]},${startCoord[0]};${endCoord[1]},${endCoord[0]}?overview=full&geometries=geojson`;
+        const res = await fetch(osrmUrl);
+        const data = await res.json();
+        if (data.routes && data.routes[0]?.geometry?.coordinates) {
+          const coords = data.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+          setRoutePolyline(coords);
+          return;
+        }
+      } catch (e) {
+        console.warn('OSRM full geometry fallback', e);
+      }
+
+      // Fallback straight-line interpolation with stops
+      const fallbackPoints = [
+        startCoord,
+        ...(activeRoute.suggestedStops?.map(s => s.coord) || []),
+        endCoord
+      ];
+      setRoutePolyline(fallbackPoints);
+    };
+
+    fetchRouteGeometry();
+  }, [activeRoute]);
 
   // Live OSRM Real Driving Route Calculator
   const handleCalculateCustomRoute = async () => {
@@ -47,45 +202,55 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
       const destData = await destRes.json();
       if (!destData || destData.length === 0) throw new Error(`Could not locate ${destQuery}`);
 
-      const origLat = origData[0].lat;
-      const origLng = origData[0].lon;
-      const destLat = destData[0].lat;
-      const destLng = destData[0].lon;
+      const origLat = parseFloat(origData[0].lat);
+      const origLng = parseFloat(origData[0].lon);
+      const destLat = parseFloat(destData[0].lat);
+      const destLng = parseFloat(destData[0].lon);
 
-      // 3. Fetch real turn-by-turn driving distance from OSRM
-      const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${origLng},${origLat};${destLng},${destLat}?overview=false`);
+      setCustomOriginCoord([origLat, origLng]);
+      setCustomDestCoord([destLat, destLng]);
+
+      // 3. Fetch real turn-by-turn driving distance & geometry from OSRM
+      const osrmRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${origLng},${origLat};${destLng},${destLat}?overview=full&geometries=geojson`);
       const osrmData = await osrmRes.json();
 
       if (osrmData.routes && osrmData.routes.length > 0) {
         const distKm = Math.round(osrmData.routes[0].distance / 1000);
         const durMin = Math.round(osrmData.routes[0].duration / 60);
+        const coords = osrmData.routes[0].geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+
         setLiveDistanceKm(distKm);
         setLiveDurationMin(durMin);
+        setRoutePolyline(coords);
         setSelectedRouteId('custom');
-        toast.success(`Calculated real driving route: ${distKm} km (${Math.floor(durMin/60)}h ${durMin%60}m)`);
+        toast.success(`Calculated live road route: ${distKm} km (${Math.floor(durMin/60)}h ${durMin%60}m)`);
       } else {
         throw new Error('No driving route found');
       }
     } catch (err) {
       console.warn('Live geocode/OSRM fallback', err);
-      toast('Live routing calculated with highway corridor model', { icon: '📍' });
+      toast('Calculated with highway corridor model', { icon: '📍' });
     } finally {
       setIsSearchingRoute(false);
     }
   };
 
-
-  const activeRoute = PRESET_ROUTES.find(r => r.id === selectedRouteId) || PRESET_ROUTES[0];
-  const requiredStopsCount = Math.max(1, Math.ceil(activeRoute.distanceKm / (maxRangeKm * 0.75)));
-
   const handleBatchReserve = () => {
     setIsReserving(true);
     setTimeout(() => {
-      setReservedStops(activeRoute.suggestedStops);
+      const stopNames = activeRoute.suggestedStops.map(s => typeof s === 'string' ? s : s.name);
+      setReservedStops(stopNames);
       setIsReserving(false);
-      toast.success(`Reserved guaranteed slots at ${activeRoute.suggestedStops.length} waypoint stations!`);
+      toast.success(`Reserved guaranteed slots at ${stopNames.length} waypoint stations!`);
     }, 1200);
   };
+
+  const mapBounds = useMemo(() => {
+    if (routePolyline.length > 0) {
+      return routePolyline;
+    }
+    return [activeRoute.fromCoord, activeRoute.toCoord];
+  }, [routePolyline, activeRoute]);
 
   return (
     <div className="modal-overlay" style={{ zIndex: 1100 }}>
@@ -281,6 +446,98 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
               <span style={{ fontSize: '16px', fontWeight: '700', color: '#06b6d4' }}>
                 {((activeRoute.distanceKm / 100) * effectiveEfficiency).toFixed(1)} kg
               </span>
+            </div>
+          </div>
+
+          {/* Interactive Leaflet Route Map */}
+          <div style={{
+            height: '250px',
+            borderRadius: '14px',
+            overflow: 'hidden',
+            border: '1px solid rgba(6, 182, 212, 0.3)',
+            marginBottom: '22px',
+            position: 'relative'
+          }}>
+            <MapContainer
+              center={activeRoute.fromCoord}
+              zoom={7}
+              style={{ height: '100%', width: '100%', background: '#090d16' }}
+              zoomControl={true}
+            >
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+              />
+              <MapBoundsUpdater bounds={mapBounds} />
+              
+              {/* Origin Marker */}
+              <Marker position={activeRoute.fromCoord} icon={createPinIcon('A', '#06b6d4', '#000')}>
+                <Popup>
+                  <div style={{ color: '#000', fontSize: '12px' }}>
+                    <strong>Start:</strong> {activeRoute.from}
+                  </div>
+                </Popup>
+              </Marker>
+
+              {/* Waypoint Stations */}
+              {activeRoute.suggestedStops?.map((st, i) => {
+                const sCoord = st.coord || (Array.isArray(st) ? st : null);
+                const sName = st.name || (typeof st === 'string' ? st : `Stop #${i+1}`);
+                if (!sCoord) return null;
+                return (
+                  <Marker key={i} position={sCoord} icon={stationPinIcon}>
+                    <Popup>
+                      <div style={{ color: '#000', fontSize: '12px' }}>
+                        <strong>{sName}</strong><br />
+                        Pressure: {st.pressure || '700 bar'}<br />
+                        Status: <span style={{ color: '#16a34a', fontWeight: 'bold' }}>Ready for Refuel</span>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
+
+              {/* Destination Marker */}
+              <Marker position={activeRoute.toCoord} icon={createPinIcon('B', '#10b981', '#000')}>
+                <Popup>
+                  <div style={{ color: '#000', fontSize: '12px' }}>
+                    <strong>Destination:</strong> {activeRoute.to}
+                  </div>
+                </Popup>
+              </Marker>
+
+              {/* Route Polyline */}
+              {routePolyline && routePolyline.length > 1 && (
+                <Polyline
+                  positions={routePolyline}
+                  pathOptions={{
+                    color: '#06b6d4',
+                    weight: 4,
+                    opacity: 0.9
+                  }}
+                />
+              )}
+            </MapContainer>
+
+            <div style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'rgba(9, 13, 22, 0.85)',
+              backdropFilter: 'blur(6px)',
+              border: '1px solid rgba(6, 182, 212, 0.4)',
+              padding: '4px 10px',
+              borderRadius: '8px',
+              fontSize: '11px',
+              color: '#06b6d4',
+              zIndex: 1000,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: '600'
+            }}>
+              <Layers size={13} />
+              <span>Interactive H2 Corridor Map</span>
             </div>
           </div>
 
