@@ -3,6 +3,9 @@ const Transaction = require('../models/Transaction');
 const Vehicle = require('../models/Vehicle');
 const FleetVehicle = require('../models/FleetVehicle');
 const Dispenser = require('../models/Dispenser');
+const Booking = require('../models/Booking');
+const User = require('../models/User');
+const Notification = require('../models/Notification');
 const { GoogleGenAI } = require('@google/genai');
 
 const FALLBACK_KEYS = [
@@ -309,3 +312,113 @@ exports.scanPlate = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to scan vehicle plate' });
   }
 };
+
+exports.voiceAutoBook = async (req, res) => {
+  try {
+    let userId = req.user?._id;
+    if (!userId) {
+      const defaultUser = await User.findOne({ role: 'customer' }) || await User.findOne();
+      userId = defaultUser?._id;
+    }
+
+    if (!userId) {
+      return res.status(400).json({ success: false, message: 'Please log in to auto-book a slot.' });
+    }
+
+    // Determine vehicle & preferred pressure
+    let preferredPressure = '700 bar';
+    const userVehicle = await Vehicle.findOne({ user: userId, isActive: true })
+      || await Vehicle.findOne({ user: userId })
+      || await FleetVehicle.findOne({ owner: userId });
+    
+    if (userVehicle?.pressureRating) {
+      preferredPressure = userVehicle.pressureRating;
+    }
+
+    // Find best active station
+    const activeStations = await Station.find({ status: { $in: ['operational', 'active'] } });
+    if (activeStations.length === 0) {
+      return res.status(404).json({ success: false, message: 'No operational hydrogen stations found online.' });
+    }
+
+    // Pick station with available pumps or first operational station
+    let targetStation = activeStations.find(s => (s.availablePumps || 0) > 0) || activeStations[0];
+
+    // Find dispenser matching preferred pressure
+    let dispenser = await Dispenser.findOne({ 
+      station: targetStation._id, 
+      status: 'available', 
+      nozzleType: preferredPressure 
+    });
+
+    if (!dispenser) {
+      dispenser = await Dispenser.findOne({ 
+        station: targetStation._id, 
+        status: 'available' 
+      });
+    }
+
+    if (!dispenser) {
+      dispenser = await Dispenser.findOne({ station: targetStation._id }) 
+        || await Dispenser.findOne();
+    }
+
+    if (!dispenser) {
+      return res.status(404).json({ success: false, message: 'No dispenser pumps currently configured for this station.' });
+    }
+
+    // Next 10-minute slot window
+    const now = new Date();
+    const slotTime = new Date(now.getTime() + 10 * 60000);
+    slotTime.setMinutes(Math.ceil(slotTime.getMinutes() / 5) * 5, 0, 0);
+
+    const booking = new Booking({
+      user: userId,
+      station: targetStation._id,
+      dispenser: dispenser._id,
+      slotTime: slotTime,
+      status: 'confirmed'
+    });
+
+    const savedBooking = await booking.save();
+
+    // Mark dispenser reserved & update pump count
+    await Dispenser.findByIdAndUpdate(dispenser._id, { $set: { status: 'reserved' } });
+    if ((targetStation.availablePumps || 0) > 0) {
+      await Station.findByIdAndUpdate(targetStation._id, { $inc: { availablePumps: -1 } });
+    }
+
+    // Create system notification
+    const timeFormatted = slotTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    const notifMsg = `Autonomous Voice Booking Confirmed: ${dispenser.nozzleType || preferredPressure} bay at ${targetStation.name} for ${timeFormatted}.`;
+    
+    await Notification.create({
+      user: userId,
+      message: notifMsg,
+      type: 'system',
+      read: false
+    });
+
+    const voiceReply = `All done! I have automatically booked a ${dispenser.nozzleType || '700-bar'} refueling dispenser at ${targetStation.name} for ${timeFormatted}. Your reservation pass is confirmed.`;
+
+    res.status(201).json({
+      success: true,
+      data: {
+        bookingId: savedBooking._id,
+        stationName: targetStation.name,
+        stationAddress: targetStation.location?.address || 'City Corridor Hub',
+        dispenserNozzle: dispenser.nozzleType || preferredPressure,
+        dispenserId: dispenser._id,
+        slotTime: timeFormatted,
+        rawSlotTime: slotTime,
+        pricePerKg: targetStation.pricePerKg || 82,
+        reply: voiceReply
+      }
+    });
+
+  } catch (error) {
+    console.error('Voice auto-book error:', error);
+    res.status(500).json({ success: false, message: 'Failed to complete autonomous voice booking' });
+  }
+};
+

@@ -1643,6 +1643,16 @@ export default function CustomerDashboard() {
         user={user}
         walletBalance={user?.walletBalance || 0}
         stations={stations}
+        onBookingSuccess={() => {
+          api.get('/bookings/my').then(res => {
+            const myBookings = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+            setBookings(myBookings.filter(b => b.status === 'pending' || b.status === 'confirmed'));
+          }).catch(()=>{});
+          api.get('/stations').then(res => {
+            const all = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+            setStations(all);
+          }).catch(()=>{});
+        }}
       />
 
       {/* Offline Digital Fuel Pass Modal */}
