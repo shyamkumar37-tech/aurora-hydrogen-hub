@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/api';
 import io from 'socket.io-client';
@@ -21,6 +21,12 @@ import {
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import { printInvoicePDF } from '../utils/reportExportUtils';
+import { 
+  startDispensingSound, 
+  updateDispensingAcousticPressure, 
+  stopDispensingSound, 
+  playRefuelCompleteChime 
+} from '../utils/h2AcousticEngine';
 
 export default function LivePumping() {
   const { id } = useParams(); // Dispenser ID
@@ -32,6 +38,14 @@ export default function LivePumping() {
   const [flowRateKgMin, setFlowRateKgMin] = useState(1.45);
   const [chartData, setChartData] = useState([]);
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const soundEnabledRef = useRef(soundEnabled);
+
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+    if (!soundEnabled) {
+      stopDispensingSound();
+    }
+  }, [soundEnabled]);
   const [vehicleInfo, setVehicleInfo] = useState(null);
   const [dispenserInfo, setDispenserInfo] = useState(null);
   const [completedTx, setCompletedTx] = useState(null);
@@ -90,6 +104,12 @@ export default function LivePumping() {
         setFuelAmount(data.currentAmount);
         setPressure(data.pressure);
         if (data.pricePerKg) setStationPrice(data.pricePerKg);
+
+        // Acoustic cryogenic flow synthesis
+        if (soundEnabledRef.current) {
+          startDispensingSound(data.pressure);
+          updateDispensingAcousticPressure(data.pressure);
+        }
         
         // Dynamic temperature fluctuations (-40C ± 1.5C)
         const tempFluct = parseFloat((-39.5 - Math.sin(timeStep * 0.3) * 1.2).toFixed(1));
@@ -116,10 +136,17 @@ export default function LivePumping() {
       if (String(data.dispenserId) === String(id)) {
         setStatus('complete');
         setCompletedTx(data);
+        stopDispensingSound();
+        if (soundEnabledRef.current) {
+          playRefuelCompleteChime();
+        }
       }
     });
 
-    return () => socket.disconnect();
+    return () => {
+      stopDispensingSound();
+      socket.disconnect();
+    };
   }, [id]);
 
   const targetPressure = 700;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Navigation, MapPin, ArrowRight, CheckCircle2, Shield, Calendar, Clock, Sparkles, X, Fuel, Layers, Check } from 'lucide-react';
+import { Navigation, MapPin, ArrowRight, CheckCircle2, Shield, Calendar, Clock, Sparkles, X, Fuel, Layers, Check, CloudSun, Wind, Thermometer } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -135,6 +135,8 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
   const [customOriginCoord, setCustomOriginCoord] = useState(null);
   const [customDestCoord, setCustomDestCoord] = useState(null);
   const [mapLayer, setMapLayer] = useState('street'); // 'street' (100% Real Roads) | 'satellite' (Real NASA/Esri) | 'dark'
+  const [routeWeather, setRouteWeather] = useState(null);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
 
   const tankCapacity = activeVehicle?.tankCapacityKg || 5.6;
   const baseEfficiency = activeVehicle?.efficiencyKgPer100Km || 0.95;
@@ -192,6 +194,41 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
 
     fetchRouteGeometry();
   }, [activeRoute]);
+
+  // Live Open-Meteo Satellite Weather for destination & corridor
+  useEffect(() => {
+    if (!activeRoute?.toCoord) return;
+    const [lat, lng] = activeRoute.toCoord;
+    setIsLoadingWeather(true);
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,wind_speed_10m,relative_humidity_2m`)
+      .then(r => r.json())
+      .then(data => {
+        if (data?.current) {
+          setRouteWeather({
+            temp: Math.round(data.current.temperature_2m),
+            wind: Math.round(data.current.wind_speed_10m),
+            humidity: Math.round(data.current.relative_humidity_2m)
+          });
+        }
+      })
+      .catch((e) => console.warn('Weather fetch error:', e))
+      .finally(() => setIsLoadingWeather(false));
+  }, [activeRoute?.toCoord]);
+
+  const weatherImpact = useMemo(() => {
+    if (!routeWeather) return { text: 'Nominal atmospheric corridor conditions', penaltyPct: 0, deltaKg: '0.0' };
+    let penalty = 0;
+    if (routeWeather.wind > 20) penalty += 5;
+    if (routeWeather.temp < 15) penalty += 4;
+    if (penalty === 0) return { text: 'Optimal atmospheric conditions (Zero headwind drag)', penaltyPct: 0, deltaKg: '0.0' };
+    const baseH2 = (activeRoute.distanceKm / 100) * effectiveEfficiency;
+    const delta = ((baseH2 * penalty) / 100).toFixed(2);
+    return {
+      text: `Headwind & atmospheric drag factor (+${penalty}%)`,
+      penaltyPct: penalty,
+      deltaKg: delta
+    };
+  }, [routeWeather, activeRoute, effectiveEfficiency]);
 
   // Live OSRM Real Driving Route Calculator
   const handleCalculateCustomRoute = async () => {
@@ -464,6 +501,42 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
               </span>
             </div>
           </div>
+
+          {/* Live Corridor Atmospheric & Weather Impact Banner */}
+          {routeWeather && (
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%)',
+              border: '1px solid rgba(6, 182, 212, 0.25)',
+              borderRadius: '12px',
+              padding: '10px 14px',
+              marginBottom: '18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <CloudSun size={18} color="#22d3ee" />
+                <span style={{ fontSize: '12px', fontWeight: '700', color: '#fff' }}>
+                  Live Satellite Weather ({activeRoute.to}):
+                </span>
+                <span style={{ fontSize: '12px', color: '#38bdf8' }}>
+                  {routeWeather.temp}°C • Wind {routeWeather.wind} km/h • Humidity {routeWeather.humidity}%
+                </span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Wind size={14} color={weatherImpact.penaltyPct > 0 ? '#f59e0b' : '#10b981'} />
+                <span style={{ 
+                  fontSize: '11px', 
+                  fontWeight: '600', 
+                  color: weatherImpact.penaltyPct > 0 ? '#fbbf24' : '#34d399' 
+                }}>
+                  {weatherImpact.text} {weatherImpact.penaltyPct > 0 && `(+${weatherImpact.deltaKg} kg)`}
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Interactive Leaflet Route Map */}
           <div style={{

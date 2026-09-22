@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -49,6 +49,7 @@ function RouteMapBounds({ waypoints }) {
 
 export default function TripPlanner() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState({
@@ -109,6 +110,37 @@ export default function TripPlanner() {
     };
     fetchVehicles();
   }, []);
+
+  // Handle URL query parameters from Voice AI
+  useEffect(() => {
+    const originParam = searchParams.get('origin');
+    const destParam = searchParams.get('destination');
+    if (!originParam && !destParam) return;
+
+    const resolveCityCoords = async (query, isOrigin) => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`);
+        const list = await res.json();
+        if (list && list.length > 0) {
+          const lat = parseFloat(list[0].lat);
+          const lng = parseFloat(list[0].lon);
+          const name = list[0].display_name.split(',')[0];
+          if (isOrigin) {
+            setStartCity(name);
+            setStartCoords({ lat, lng });
+          } else {
+            setDestCity(name);
+            setDestCoords({ lat, lng });
+          }
+        }
+      } catch (e) {
+        console.warn('Geocoding query param error:', e);
+      }
+    };
+
+    if (originParam) resolveCityCoords(originParam, true);
+    if (destParam) resolveCityCoords(destParam, false);
+  }, [searchParams]);
 
   const handleCalculateRoute = async (e) => {
     if (e) e.preventDefault();

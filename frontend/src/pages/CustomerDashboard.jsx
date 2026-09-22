@@ -30,6 +30,7 @@ import InvoiceModal from '../components/InvoiceModal';
 import TankDigitalTwin3D from '../components/TankDigitalTwin3D';
 import PlateVisionScanner from '../components/PlateVisionScanner';
 import PasskeyScannerModal from '../components/PasskeyScannerModal';
+import InstallAppBanner from '../components/InstallAppBanner';
 import { registerPasskey } from '../utils/webAuthnUtils';
 
 export default function CustomerDashboard() {
@@ -452,6 +453,9 @@ export default function CustomerDashboard() {
     <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: 'var(--text-main)', padding: '48px 48px' }}>
       <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
         
+        {/* PWA INSTALL PROMPT */}
+        <InstallAppBanner />
+
         {/* HEADER */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
           <div>

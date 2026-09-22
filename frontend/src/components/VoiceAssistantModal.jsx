@@ -228,8 +228,35 @@ export default function VoiceAssistantModal({ isOpen, onClose, user, walletBalan
       return;
     } 
     
-    if (text.includes('trip') || text.includes('route planner')) {
-      const reply = "Navigating to the AI H2 Trip Planner.";
+    if (text.includes('trip') || text.includes('route') || text.includes('navigate to') || text.includes('drive to')) {
+      // Check for "from X to Y" pattern
+      const fromToMatch = rawText.match(/(?:from\s+([a-zA-Z\s]+?)\s+to\s+([a-zA-Z\s]+))|(?:to\s+([a-zA-Z\s]+?)\s+from\s+([a-zA-Z\s]+))/i);
+      let origin = '';
+      let destination = '';
+
+      if (fromToMatch) {
+        if (fromToMatch[1] && fromToMatch[2]) {
+          origin = fromToMatch[1].trim();
+          destination = fromToMatch[2].trim();
+        } else if (fromToMatch[3] && fromToMatch[4]) {
+          destination = fromToMatch[3].trim();
+          origin = fromToMatch[4].trim();
+        }
+      }
+
+      if (origin && destination) {
+        const reply = `Routing your green hydrogen corridor from ${origin} to ${destination}. Calculating 700-bar dispenser stops and real highway network.`;
+        speak(reply);
+        setResponse(reply);
+        toast.success(`Planning trip: ${origin} ➔ ${destination}`, { icon: '🗺️' });
+        setTimeout(() => {
+          onClose();
+          navigate(`/customer/trip-planner?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`);
+        }, 2400);
+        return;
+      }
+
+      const reply = "Navigating to the AI H2 Trip Planner. You can view 700-bar corridor stations, road routes, and satellite weather.";
       speak(reply);
       setResponse(reply);
       setTimeout(() => {
