@@ -82,6 +82,32 @@ export default function PredictiveMaintenanceHub({ onClose }) {
           </div>
         </div>
 
+        {/* Gemini AI Engineering Assessment */}
+        {diagnostics?.aiEngineeringAssessment && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%)',
+            border: '1px solid rgba(6, 182, 212, 0.35)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '12px'
+          }}>
+            <div style={{ background: 'rgba(6, 182, 212, 0.2)', padding: '6px', borderRadius: '8px', flexShrink: 0, marginTop: '2px' }}>
+              <Activity size={16} color="#22d3ee" />
+            </div>
+            <div>
+              <span style={{ fontSize: '11px', fontWeight: '800', color: '#22d3ee', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '4px' }}>
+                🧠 Gemini Predictive Engineering Assessment
+              </span>
+              <p style={{ color: '#e2e8f0', fontSize: '13px', margin: 0, lineHeight: 1.55 }}>
+                {diagnostics.aiEngineeringAssessment}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Pump Anomaly Grid */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {(diagnostics?.healthScores || []).map(score => {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Volume2, X, Sparkles, Navigation, Fuel, ShieldCheck, Zap, CornerDownLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import api from '../api/api';
 
 export default function VoiceAssistantModal({ isOpen, onClose, user, walletBalance, stations = [] }) {
   const navigate = useNavigate();
@@ -54,26 +55,58 @@ export default function VoiceAssistantModal({ isOpen, onClose, user, walletBalan
     };
   }, []);
 
-  // Equalizer visualizer animation when listening or speaking
+  // Real Microphone FFT Audio Frequency Analyzer
   useEffect(() => {
-    let interval;
-    if (isListening || isSpeaking) {
-      interval = setInterval(() => {
-        setAudioLevels([
-          Math.floor(Math.random() * 38) + 8,
-          Math.floor(Math.random() * 45) + 12,
-          Math.floor(Math.random() * 52) + 16,
-          Math.floor(Math.random() * 58) + 20,
-          Math.floor(Math.random() * 48) + 14,
-          Math.floor(Math.random() * 36) + 10,
-          Math.floor(Math.random() * 25) + 6,
-        ]);
-      }, 90);
+    let audioCtx = null;
+    let analyser = null;
+    let source = null;
+    let micStream = null;
+    let animationFrameId = null;
+
+    if (isListening && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ audio: true })
+        .then((stream) => {
+          micStream = stream;
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+          source = audioCtx.createMediaStreamSource(stream);
+          source.connect(analyser);
+
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+          const updateLevels = () => {
+            if (!analyser) return;
+            analyser.getByteFrequencyData(dataArray);
+            
+            // Map real microphone frequency spectrum to 7 equalizer bands
+            const levels = [
+              Math.max(10, Math.min(55, Math.round(dataArray[1] / 3.2))),
+              Math.max(12, Math.min(60, Math.round(dataArray[2] / 2.8))),
+              Math.max(14, Math.min(65, Math.round(dataArray[3] / 2.5))),
+              Math.max(16, Math.min(70, Math.round(dataArray[4] / 2.2))),
+              Math.max(14, Math.min(65, Math.round(dataArray[5] / 2.5))),
+              Math.max(12, Math.min(60, Math.round(dataArray[6] / 2.8))),
+              Math.max(10, Math.min(55, Math.round(dataArray[7] / 3.2))),
+            ];
+            setAudioLevels(levels);
+            animationFrameId = requestAnimationFrame(updateLevels);
+          };
+          updateLevels();
+        })
+        .catch(() => {
+          setAudioLevels([14, 20, 26, 32, 26, 20, 14]);
+        });
     } else {
       setAudioLevels([10, 14, 18, 22, 18, 14, 10]);
     }
-    return () => clearInterval(interval);
-  }, [isListening, isSpeaking]);
+
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      if (source) source.disconnect();
+      if (audioCtx) audioCtx.close().catch(() => {});
+      if (micStream) micStream.getTracks().forEach(t => t.stop());
+    };
+  }, [isListening]);
 
   const speak = (text) => {
     if (!('speechSynthesis' in window)) return;
@@ -94,51 +127,79 @@ export default function VoiceAssistantModal({ isOpen, onClose, user, walletBalan
     window.speechSynthesis.speak(utterance);
   };
 
-  const processVoiceCommand = (rawText) => {
+  const processVoiceCommand = async (rawText) => {
     const text = rawText.toLowerCase().trim();
-    let reply = "";
 
+    // 1. Instant local route/action shortcuts
     if (text.includes('balance') || text.includes('wallet') || text.includes('funds')) {
-      reply = `Your current Aurora wallet balance is ₹${walletBalance?.toLocaleString() || 0}. You have sufficient funds for refuels.`;
+      const reply = `Your current Aurora wallet balance is ₹${walletBalance?.toLocaleString() || 0}. You have sufficient funds for refuels.`;
       speak(reply);
       setResponse(reply);
-    } else if (text.includes('station') || text.includes('nearest') || text.includes('pump') || text.includes('find')) {
+      return;
+    } 
+    
+    if (text.includes('station') || text.includes('nearest') || text.includes('pumps near me')) {
       const activeCount = stations.length || 3;
-      reply = `I found ${activeCount} active Green Hydrogen stations near you. The Koramangala Hub has 700 bar dispensers ready with zero queue.`;
+      const reply = `I found ${activeCount} active Green Hydrogen stations. Downtown Hydrogen Hub has 700 bar dispensers ready with minimal queue.`;
       speak(reply);
       setResponse(reply);
       setTimeout(() => {
         onClose();
         navigate('/stations');
-      }, 2600);
-    } else if (text.includes('book') || text.includes('reserve') || text.includes('slot')) {
-      reply = "Opening the smart dispenser reservation terminal now.";
+      }, 2500);
+      return;
+    } 
+    
+    if (text.includes('book') || text.includes('reserve dispenser') || text.includes('reserve pump')) {
+      const reply = "Opening the smart dispenser reservation terminal now.";
       speak(reply);
       setResponse(reply);
       setTimeout(() => {
         onClose();
         navigate('/customer/book');
-      }, 2200);
-    } else if (text.includes('trip') || text.includes('route') || text.includes('plan')) {
-      reply = "Navigating to the AI H2 Trip Planner.";
+      }, 2000);
+      return;
+    } 
+    
+    if (text.includes('trip') || text.includes('route planner')) {
+      const reply = "Navigating to the AI H2 Trip Planner.";
       speak(reply);
       setResponse(reply);
       setTimeout(() => {
         onClose();
         navigate('/customer/trip-planner');
       }, 2000);
-    } else if (text.includes('certificate') || text.includes('carbon') || text.includes('esg') || text.includes('saved')) {
-      reply = "Your zero-emission green hydrogen has prevented over 412 kilograms of CO2 from entering our atmosphere.";
+      return;
+    } 
+    
+    if (text.includes('certificate') || text.includes('carbon') || text.includes('esg')) {
+      const reply = "Your zero-emission green hydrogen has prevented over 412 kilograms of CO2 from entering the atmosphere.";
       speak(reply);
       setResponse(reply);
-    } else if (text.includes('hello') || text.includes('hi') || text.includes('aurora')) {
-      reply = `Greetings ${user?.name?.split(' ')[0] || 'Captain'}. I am Aurora Voice Copilot. How can I assist your hydrogen journey today?`;
-      speak(reply);
-      setResponse(reply);
-    } else {
-      reply = `Understood: "${rawText}". I am analyzing optimal hydrogen logistics and telemetry.`;
-      speak(reply);
-      setResponse(reply);
+      return;
+    }
+
+    // 2. Real Generative Gemini AI Voice Brain
+    try {
+      setResponse("Consulting Aurora Intelligence...");
+      const res = await api.post('/ai/refueling-assistant', { message: rawText });
+      const rawReply = res.data?.data?.reply || res.data?.reply || "All stations in the Aurora Hydrogen network are operating normally.";
+      
+      // Clean markdown tags for natural speech synthesis
+      const cleanVoiceReply = rawReply
+        .replace(/\*\*/g, '')
+        .replace(/•/g, '')
+        .replace(/₹/g, 'Rupees ')
+        .replace(/\n\n/g, ' ')
+        .replace(/\n/g, ' ');
+
+      setResponse(rawReply);
+      speak(cleanVoiceReply);
+    } catch (err) {
+      console.warn('Voice AI Gemini backend fallback', err);
+      const fallbackReply = `Understood: "${rawText}". Aurora dispensers are online with nominal 700-bar telemetry.`;
+      setResponse(fallbackReply);
+      speak(fallbackReply);
     }
   };
 

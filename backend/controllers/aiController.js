@@ -5,6 +5,31 @@ const FleetVehicle = require('../models/FleetVehicle');
 const Dispenser = require('../models/Dispenser');
 const { GoogleGenAI } = require('@google/genai');
 
+// Key pool with automatic failover across all configured environment keys
+const GEMINI_KEYS = [
+  process.env.GEMINI_API_KEY,
+  process.env.GEMINI_API_KEY_2,
+  process.env.GEMINI_API_KEY_3,
+  process.env.GEMINI_API_KEY_4
+].filter(Boolean);
+
+const UNIQUE_KEYS = [...new Set(GEMINI_KEYS)];
+
+async function callGeminiWithFailover(payloadFn) {
+  let lastError = null;
+  for (let i = 0; i < UNIQUE_KEYS.length; i++) {
+    const key = UNIQUE_KEYS[i];
+    try {
+      const ai = new GoogleGenAI({ apiKey: key });
+      return await payloadFn(ai);
+    } catch (err) {
+      console.warn(`Gemini key [${i}] warning (${err.message?.substring(0, 50)}), failing over to next key...`);
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('All Gemini API keys exhausted');
+}
+
 exports.askAssistant = async (req, res) => {
   try {
     const { message, userLocation } = req.body;
@@ -40,11 +65,9 @@ exports.askAssistant = async (req, res) => {
       }
     }
 
-    // 2. Try processing with LLM if API Key is configured
-    if (process.env.GEMINI_API_KEY) {
+    // 2. Try processing with LLM if API Key pool is configured
+    if (UNIQUE_KEYS.length > 0) {
       try {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        
         // Strip out Mongoose specific properties for cleaner prompt
         const cleanStations = activeStations.map(s => ({ 
           id: s._id, 
@@ -68,15 +91,17 @@ Return your response as a valid JSON object ONLY. Structure:
   "structuredData": null | { "type": "station_recommendation", "stationId": "ID of recommended station", "reason": "Why" } | { "type": "spend_summary", "totalSpend": 0, "totalKg": 0 }
 }`;
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: [
-            { role: 'user', parts: [{ text: systemPrompt + '\n\nUser Message: ' + message }] }
-          ],
-          config: {
-            responseMimeType: 'application/json',
-          }
-        });
+        const response = await callGeminiWithFailover((ai) => 
+          ai.models.generateContent({
+            model: 'gemini-3.6-flash',
+            contents: [
+              { role: 'user', parts: [{ text: systemPrompt + '\n\nUser Message: ' + message }] }
+            ],
+            config: {
+              responseMimeType: 'application/json',
+            }
+          })
+        );
 
         let rawText = (response.text || '').trim();
         rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
@@ -176,32 +201,34 @@ exports.scanPlate = async (req, res) => {
     let confidence = 98.6;
 
     // 1. If image provided and GEMINI_API_KEY available, run real vision detection
-    if (image && process.env.GEMINI_API_KEY) {
+    if (image && UNIQUE_KEYS.length > 0) {
       try {
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
         const base64Data = image.replace(/^data:image\/\w+;base64,/, '');
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: [
-            {
-              role: 'user',
-              parts: [
-                {
-                  inlineData: {
-                    mimeType: 'image/jpeg',
-                    data: base64Data
+        const response = await callGeminiWithFailover((ai) =>
+          ai.models.generateContent({
+            model: 'gemini-3.6-flash',
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    inlineData: {
+                      mimeType: 'image/jpeg',
+                      data: base64Data
+                    }
+                  },
+                  {
+                    text: 'Analyze this vehicle image. Identify the vehicle license plate or VIN number. Return ONLY a JSON object with: {"plateNumber": "DETECTED_PLATE_OR_UNKNOWN", "vehicleType": "Detected vehicle type", "confidence": 95}.'
                   }
-                },
-                {
-                  text: 'Analyze this vehicle image. Identify the vehicle license plate or VIN number. Return ONLY a JSON object with: {"plateNumber": "DETECTED_PLATE_OR_UNKNOWN", "vehicleType": "Detected vehicle type", "confidence": 95}.'
-                }
-              ]
-            }
-          ]
-        });
+                ]
+              }
+            ]
+          })
+        );
 
-        const text = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        let rawText = (response.text || response.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+        rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/, '').trim();
+        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           const parsed = JSON.parse(jsonMatch[0]);
           if (parsed.plateNumber && parsed.plateNumber !== 'UNKNOWN') {
@@ -216,9 +243,12 @@ exports.scanPlate = async (req, res) => {
 
     // 2. If no plate detected from image or manually, get user's real registered vehicle from MongoDB
     if (!detectedPlate) {
-      const userVehicle = await Vehicle.findOne({ user: req.user._id, isActive: true }) 
-        || await Vehicle.findOne({ user: req.user._id })
-        || await FleetVehicle.findOne({ owner: req.user._id });
+      let userVehicle = null;
+      if (req.user?._id) {
+        userVehicle = await Vehicle.findOne({ user: req.user._id, isActive: true }) 
+          || await Vehicle.findOne({ user: req.user._id })
+          || await FleetVehicle.findOne({ owner: req.user._id });
+      }
         
       if (userVehicle) {
         detectedPlate = userVehicle.plateNumber;
