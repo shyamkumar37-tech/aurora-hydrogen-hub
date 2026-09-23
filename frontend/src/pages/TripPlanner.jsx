@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import api from '../api/api';
 import toast from 'react-hot-toast';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 import { 
   Navigation, 
   MapPin, 
@@ -48,6 +50,7 @@ function RouteMapBounds({ waypoints }) {
 }
 
 export default function TripPlanner() {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -194,7 +197,8 @@ export default function TripPlanner() {
   };
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1440px', margin: '0 auto', color: '#f8fafc' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner">
       
       {/* Top Breadcrumb */}
       <Link 
@@ -218,7 +222,7 @@ export default function TripPlanner() {
       />
 
       {/* Main Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(340px, 440px) 1fr', gap: '24px', alignItems: 'start' }}>
+      <div className="responsive-split-grid">
         
         {/* Left Form Panel */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -607,7 +611,9 @@ export default function TripPlanner() {
         </div>
 
       </div>
+      </div>
 
+      <CustomerMobileNav user={user} logout={logout} />
     </div>
   );
 }

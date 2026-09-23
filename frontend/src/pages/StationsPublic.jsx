@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
 import PageHeader from '../components/ui/PageHeader';
 import Skeleton from '../components/ui/Skeleton';
@@ -7,8 +8,10 @@ import EmptyState from '../components/ui/EmptyState';
 import Button from '../components/ui/Button';
 import { MapPin, ArrowLeft, Navigation, BatteryCharging } from 'lucide-react';
 import toast from 'react-hot-toast';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 
 export default function StationsPublic() {
+  const { user, logout } = useContext(AuthContext);
   const [stations, setStations] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -28,7 +31,8 @@ export default function StationsPublic() {
   }, []);
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner">
       <button 
         onClick={() => navigate(-1)} 
         style={{ 
@@ -57,7 +61,7 @@ export default function StationsPublic() {
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '24px' }}>
         {loading ? (
           <>
             <Skeleton height="160px" borderRadius="16px" />
@@ -106,6 +110,8 @@ export default function StationsPublic() {
           ))
         )}
       </div>
+      </div>
+      <CustomerMobileNav user={user} logout={logout} />
     </div>
   );
 }

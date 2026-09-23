@@ -19,11 +19,8 @@ export default function FloatingVoiceOrb({ onTriggerVoice }) {
 
   return (
     <div
+      className="floating-fab-voice"
       style={{
-        position: 'fixed',
-        bottom: '28px',
-        right: '28px',
-        zIndex: 999,
         display: 'flex',
         alignItems: 'center',
         gap: '12px'

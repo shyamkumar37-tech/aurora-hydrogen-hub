@@ -188,8 +188,8 @@ export default function Checkout() {
 
   if (loading) {
     return (
-      <div style={{ backgroundColor: '#050505', minHeight: '100vh', padding: '48px 24px', color: '#f8fafc' }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+      <div className="responsive-page-container">
+        <div className="responsive-page-inner" style={{ maxWidth: '640px' }}>
           <Skeleton height="60px" style={{ marginBottom: '24px' }} borderRadius="12px" />
           <Skeleton height="350px" borderRadius="16px" />
         </div>
@@ -222,7 +222,7 @@ export default function Checkout() {
   // SUCCESS CONFIRMATION VIEW
   if (paymentSuccess) {
     return (
-      <div style={{ backgroundColor: '#050505', minHeight: '100vh', padding: '48px 24px', color: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="responsive-page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ 
           maxWidth: '480px', 
           width: '100%', 
@@ -300,8 +300,8 @@ export default function Checkout() {
   }
 
   return (
-    <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: '#f8fafc', padding: '48px 24px' }}>
-      <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner" style={{ maxWidth: '640px' }}>
         
         {/* Navigation */}
         <button 

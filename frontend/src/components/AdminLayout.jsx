@@ -8,13 +8,15 @@ import {
   CalendarCheck, 
   Wrench, 
   BarChart3, 
-  LogOut,
-  Users,
-  Tag,
-  Map,
-  LifeBuoy,
-  MapPin,
-  ChevronDown
+  LogOut, 
+  Users, 
+  Tag, 
+  Map, 
+  LifeBuoy, 
+  MapPin, 
+  ChevronDown,
+  Menu,
+  X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import './admin-theme.css';
@@ -24,11 +26,17 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [stations, setStations] = useState([]);
   const [selectedStationId, setSelectedStationId] = useState(
     localStorage.getItem('admin_active_station') || ''
   );
   const [activeStation, setActiveStation] = useState(null);
+
+  // Close mobile drawer on route navigation
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
 
   const fetchStations = async () => {
     try {
@@ -77,10 +85,70 @@ const AdminLayout = () => {
 
   return (
     <div className="admin-layout" data-theme="admin">
+      {/* Mobile Top Header */}
+      <header className="admin-mobile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button 
+            type="button" 
+            className="admin-mobile-menu-btn" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Navigation Menu"
+          >
+            <Menu size={20} />
+          </button>
+          <div>
+            <div style={{ fontWeight: '800', fontSize: '1rem', color: '#818cf8', letterSpacing: '-0.02em' }}>
+              AURORA ADMIN
+            </div>
+            <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+              {activeStation?.name || 'Operations Central'}
+            </div>
+          </div>
+        </div>
+
+        <button 
+          onClick={handleLogout}
+          style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            color: '#f87171',
+            borderRadius: '8px',
+            padding: '6px 10px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '0.75rem',
+            cursor: 'pointer'
+          }}
+        >
+          <LogOut size={14} />
+          <span>Exit</span>
+        </button>
+      </header>
+
+      {/* Backdrop for mobile drawer */}
+      <div 
+        className={`admin-drawer-backdrop ${mobileMenuOpen ? 'active' : ''}`}
+        onClick={() => setMobileMenuOpen(false)}
+      />
+
       {/* Sidebar */}
-      <aside className="glass-sidebar">
+      <aside className={`glass-sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-header">
           <h2>Admin Station</h2>
+          <button 
+            type="button"
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              display: mobileMenuOpen ? 'flex' : 'none'
+            }}
+          >
+            <X size={20} />
+          </button>
         </div>
         
         <nav className="sidebar-nav">

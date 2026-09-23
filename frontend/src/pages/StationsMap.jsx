@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { ArrowLeft, MapPin } from 'lucide-react';
 import PageHeader from '../components/ui/PageHeader';
 import api from '../api/api';
@@ -7,6 +8,7 @@ import Skeleton from '../components/ui/Skeleton';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 
 // Fix for default leaflet markers in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -30,6 +32,7 @@ const stationIcon = new L.Icon({
 const defaultCenter = [37.7749, -122.4194];
 
 export default function StationsMap() {
+  const { user, logout } = useContext(AuthContext);
   const [stations, setStations] = useState([]);
   const [center, setCenter] = useState(defaultCenter);
   const [loading, setLoading] = useState(true);
@@ -64,7 +67,8 @@ export default function StationsMap() {
   };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner">
       <button 
         onClick={() => navigate(-1)} 
         style={{ 
@@ -86,11 +90,11 @@ export default function StationsMap() {
         description="Find hydrogen refueling stations around your current location."
       />
 
-      <div className="glass-panel" style={{ padding: '24px' }}>
+      <div className="glass-panel" style={{ padding: '20px' }}>
         {loading ? (
-          <Skeleton height="600px" borderRadius="12px" />
+          <Skeleton height="min(600px, 68vh)" borderRadius="12px" />
         ) : (
-          <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-light)', height: '600px', zIndex: 1 }}>
+          <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--border-light)', height: 'min(600px, 68vh)', zIndex: 1 }}>
             <MapContainer center={center} zoom={11} style={{ height: '100%', width: '100%' }}>
               {/* OpenStreetMap Standard Tiles (No API key needed) */}
               <TileLayer
@@ -126,6 +130,8 @@ export default function StationsMap() {
           </div>
         )}
       </div>
+      </div>
+      <CustomerMobileNav user={user} logout={logout} />
     </div>
   );
 }

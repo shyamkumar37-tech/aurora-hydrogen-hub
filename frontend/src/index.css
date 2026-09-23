@@ -1078,3 +1078,195 @@ input:-webkit-autofill:active {
   text-transform: uppercase;
 }
 
+/* ==========================================================================
+   GLOBAL RESPONSIVE CONTAINER & MOBILE HMI ENHANCEMENTS
+   ========================================================================== */
+
+/* Universal Responsive Page Container */
+.responsive-page-container {
+  background-color: #050505;
+  min-height: 100vh;
+  color: var(--text-main);
+  padding: 40px 48px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.responsive-page-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Mobile-adapted Horizontal Chip / Button Scroller */
+.action-chip-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Two-column layout that gracefully collapses */
+.responsive-split-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, 440px) 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Responsive Table Container */
+.responsive-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-md);
+}
+
+/* Coordinated Floating Action Buttons */
+.floating-fab-sos {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;
+  z-index: 9990;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.floating-fab-voice {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9989;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tablet Media Query (< 1024px) */
+@media (max-width: 1024px) {
+  .responsive-page-container {
+    padding: 28px 24px;
+  }
+
+  .responsive-split-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* Mobile Devices (< 768px) */
+@media (max-width: 768px) {
+  .responsive-page-container {
+    padding: 16px 14px calc(80px + env(safe-area-inset-bottom, 16px)) 14px;
+  }
+
+  /* Prevent horizontal page shifts */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Font size 16px to prevent iOS auto-zoom on form fields */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Single-column split grids */
+  .responsive-split-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px;
+  }
+
+  /* Horizontal swipeable chip bar for action buttons */
+  .action-chip-scroll {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .action-chip-scroll::-webkit-scrollbar {
+    display: none;
+  }
+  .action-chip-scroll > * {
+    flex-shrink: 0 !important;
+  }
+
+  /* Universal Modal Dialog Responsive Adaptation */
+  .modal-overlay {
+    padding: 12px !important;
+    align-items: flex-end !important;
+    justify-content: center !important;
+  }
+
+  .modal-overlay > div,
+  .modal-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: calc(92vh - env(safe-area-inset-bottom, 16px)) !important;
+    border-radius: 20px 20px 0 0 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px calc(24px + env(safe-area-inset-bottom, 16px)) 16px !important;
+    margin: 0 !important;
+  }
+
+  /* Stacking and repositioning Floating Action Buttons above Mobile Nav */
+  .floating-fab-sos {
+    bottom: calc(76px + env(safe-area-inset-bottom, 12px)) !important;
+    left: 14px !important;
+    right: auto !important;
+    height: 44px !important;
+    padding: 0 14px !important;
+    border-radius: 22px !important;
+  }
+  .floating-fab-sos span {
+    font-size: 0.75rem !important;
+  }
+
+  .floating-fab-voice {
+    bottom: calc(76px + env(safe-area-inset-bottom, 12px)) !important;
+    right: 14px !important;
+  }
+  .floating-fab-voice button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  /* Responsive Cards & Panels Padding */
+  .glass-panel,
+  .premium-panel {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Stat & Metrics Values */
+  .network-stat-val {
+    font-size: 1.3rem !important;
+  }
+
+  /* Buttons on mobile get touch-friendly padding */
+  .btn {
+    min-height: 42px;
+    padding: 10px 16px;
+  }
+}
+
+/* Ultra-compact phones (< 420px) */
+@media (max-width: 420px) {
+  .responsive-page-container {
+    padding: 12px 10px calc(80px + env(safe-area-inset-bottom, 16px)) 10px;
+  }
+
+  .floating-fab-sos span {
+    display: none !important;
+  }
+  .floating-fab-sos {
+    width: 46px !important;
+    height: 46px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+  }
+}
+
+

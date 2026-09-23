@@ -197,53 +197,55 @@ export default function StaffLayout() {
         background: 'rgba(15, 23, 42, 0.85)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
         backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         position: 'sticky',
         top: eStopActive ? '46px' : 0,
         zIndex: 900
       }}>
-        <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '12px 24px' }}>
+        <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '10px 14px' }}>
           
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             
             {/* Logo & Station Scoping Selector */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', flex: '1 1 auto' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
-                  width: '38px',
-                  height: '38px',
+                  width: '36px',
+                  height: '36px',
                   borderRadius: '10px',
                   background: 'linear-gradient(135deg, #06b6d4 0%, #0284c7 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 0 16px rgba(6, 182, 212, 0.4)'
+                  boxShadow: '0 0 16px rgba(6, 182, 212, 0.4)',
+                  flexShrink: 0
                 }}>
-                  <Radio size={20} color="#fff" />
+                  <Radio size={18} color="#fff" />
                 </div>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span style={{ fontWeight: '800', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem', color: '#38bdf8' }}>H₂ AURORA</span>
-                    <span style={{ fontSize: '0.65rem', fontWeight: '800', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '2px 6px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>STAFF PORTAL</span>
+                    <span style={{ fontWeight: '800', fontFamily: 'Space Grotesk, sans-serif', fontSize: '1.1rem', color: '#38bdf8' }}>H₂ AURORA</span>
+                    <span style={{ fontSize: '0.62rem', fontWeight: '800', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '2px 6px', borderRadius: '6px', border: '1px solid rgba(56, 189, 248, 0.3)' }}>STAFF</span>
                   </div>
-                  <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Station Operations Console</span>
+                  <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>Operations Console</span>
                 </div>
               </div>
 
               {/* Station Scope Selector */}
-              <div style={{ position: 'relative', minWidth: '220px' }}>
+              <div style={{ position: 'relative', minWidth: '180px', flex: '1 1 200px', maxWidth: '320px' }}>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <MapPin size={16} color="#38bdf8" style={{ position: 'absolute', left: '12px', pointerEvents: 'none' }} />
+                  <MapPin size={15} color="#38bdf8" style={{ position: 'absolute', left: '12px', pointerEvents: 'none' }} />
                   <select 
                     value={selectedStationId} 
                     onChange={(e) => setSelectedStationId(e.target.value)}
                     style={{
                       width: '100%',
-                      padding: '8px 32px 8px 36px',
+                      padding: '7px 28px 7px 32px',
                       background: 'rgba(30, 41, 59, 0.7)',
                       border: '1px solid rgba(56, 189, 248, 0.3)',
                       borderRadius: '10px',
                       color: '#f8fafc',
-                      fontSize: '0.875rem',
+                      fontSize: '0.82rem',
                       fontWeight: '600',
                       appearance: 'none',
                       outline: 'none',
@@ -256,13 +258,13 @@ export default function StaffLayout() {
                       </option>
                     ))}
                   </select>
-                  <ChevronDown size={14} color="#94a3b8" style={{ position: 'absolute', right: '12px', pointerEvents: 'none' }} />
+                  <ChevronDown size={14} color="#94a3b8" style={{ position: 'absolute', right: '10px', pointerEvents: 'none' }} />
                 </div>
               </div>
             </div>
 
             {/* Operator Duty Badge, Shift Timer & Quick Profile */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
               
               {/* Duty Toggle Pill */}
               <button
@@ -270,13 +272,13 @@ export default function StaffLayout() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '8px',
-                  padding: '8px 14px',
+                  gap: '6px',
+                  padding: '6px 12px',
                   borderRadius: '20px',
                   background: activeShift ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
                   border: activeShift ? '1px solid rgba(16, 185, 129, 0.4)' : '1px solid rgba(239, 68, 68, 0.4)',
                   color: activeShift ? '#34d399' : '#f87171',
-                  fontSize: '0.8rem',
+                  fontSize: '0.75rem',
                   fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
@@ -284,57 +286,54 @@ export default function StaffLayout() {
                 title={activeShift ? "Click to go to shift handover" : "Click to clock in"}
               >
                 <div style={{
-                  width: '8px',
-                  height: '8px',
+                  width: '7px',
+                  height: '7px',
                   borderRadius: '50%',
                   background: activeShift ? '#10b981' : '#ef4444',
                   boxShadow: activeShift ? '0 0 8px #10b981' : 'none'
                 }}></div>
                 <span>{activeShift ? 'ON DUTY' : 'OFF DUTY'}</span>
                 {activeShift && (
-                  <span style={{ color: '#94a3b8', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '8px', fontFamily: 'monospace' }}>
+                  <span style={{ color: '#94a3b8', borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '6px', fontFamily: 'monospace' }}>
                     {shiftTimer}
                   </span>
                 )}
               </button>
 
-              {/* Safety Checklist indicator */}
+              {/* Safety Checklist indicator (hidden on very small screens, visible on tablet+) */}
               {activeShift && (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '6px',
-                  padding: '6px 12px',
+                  padding: '5px 10px',
                   borderRadius: '12px',
                   background: activeShift.safetyChecklistPassed ? 'rgba(56, 189, 248, 0.12)' : 'rgba(245, 158, 11, 0.12)',
                   border: activeShift.safetyChecklistPassed ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid rgba(245, 158, 11, 0.3)',
                   color: activeShift.safetyChecklistPassed ? '#38bdf8' : '#fbbf24',
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   fontWeight: '600'
                 }}>
-                  <ShieldCheck size={14} />
-                  <span>{activeShift.safetyChecklistPassed ? 'Safety Inspected' : 'Inspection Due'}</span>
+                  <ShieldCheck size={13} />
+                  <span>{activeShift.safetyChecklistPassed ? 'Inspected' : 'Check Due'}</span>
                 </div>
               )}
 
               {/* User badge */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <div style={{
-                  width: '32px',
-                  height: '32px',
+                  width: '30px',
+                  height: '30px',
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontWeight: '700',
-                  fontSize: '0.85rem'
+                  fontSize: '0.8rem',
+                  color: '#fff'
                 }}>
                   {user?.name?.charAt(0) || 'S'}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                  <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#f1f5f9' }}>{user?.name || 'Operator'}</span>
-                  <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Station Staff</span>
                 </div>
                 <button
                   onClick={() => {
@@ -348,11 +347,13 @@ export default function StaffLayout() {
                     padding: '6px',
                     color: '#94a3b8',
                     cursor: 'pointer',
-                    marginLeft: '6px'
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                   title="Logout"
                 >
-                  <LogOut size={16} />
+                  <LogOut size={15} />
                 </button>
               </div>
 
@@ -360,14 +361,17 @@ export default function StaffLayout() {
 
           </div>
 
-          {/* Navigation Bar Tabs */}
+          {/* Navigation Bar Tabs (Smooth Horizontal Scroll on Mobile) */}
           <nav style={{
             display: 'flex',
             gap: '8px',
-            marginTop: '14px',
+            marginTop: '10px',
             borderTop: '1px solid rgba(255, 255, 255, 0.05)',
-            paddingTop: '10px',
-            overflowX: 'auto'
+            paddingTop: '8px',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
           }}>
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -379,20 +383,21 @@ export default function StaffLayout() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    padding: '8px 16px',
+                    gap: '6px',
+                    padding: '7px 14px',
                     borderRadius: '10px',
-                    fontSize: '0.875rem',
+                    fontSize: '0.8rem',
                     fontWeight: isActive ? '700' : '500',
                     color: isActive ? '#38bdf8' : '#94a3b8',
                     background: isActive ? 'rgba(56, 189, 248, 0.12)' : 'transparent',
                     border: isActive ? '1px solid rgba(56, 189, 248, 0.3)' : '1px solid transparent',
                     textDecoration: 'none',
                     transition: 'all 0.2s ease',
-                    whiteSpace: 'nowrap'
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0
                   }}
                 >
-                  <Icon size={16} />
+                  <Icon size={15} />
                   <span>{item.label}</span>
                 </NavLink>
               );
@@ -403,7 +408,7 @@ export default function StaffLayout() {
       </header>
 
       {/* Main Outlet Context Provider */}
-      <main style={{ maxWidth: '1440px', margin: '0 auto', padding: '24px 20px 60px 20px' }}>
+      <main style={{ maxWidth: '1440px', margin: '0 auto', padding: '16px 14px 60px 14px' }}>
         <Outlet context={{ selectedStationId, activeStation, activeShift, fetchStationData }} />
       </main>
 

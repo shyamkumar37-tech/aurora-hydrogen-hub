@@ -32,6 +32,7 @@ import PlateVisionScanner from '../components/PlateVisionScanner';
 import PasskeyScannerModal from '../components/PasskeyScannerModal';
 import InstallAppBanner from '../components/InstallAppBanner';
 import FloatingVoiceOrb from '../components/FloatingVoiceOrb';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 import { registerPasskey } from '../utils/webAuthnUtils';
 
 export default function CustomerDashboard() {
@@ -451,23 +452,23 @@ export default function CustomerDashboard() {
   const progressPct = Math.min((points / nextTierPoints) * 100, 100);
 
   return (
-    <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: 'var(--text-main)', padding: '48px 48px' }}>
-      <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner">
         
         {/* PWA INSTALL PROMPT */}
         <InstallAppBanner />
 
         {/* HEADER */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: '400', letterSpacing: '-0.02em', margin: '0 0 8px 0' }}>
+            <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.5rem)', fontWeight: '400', letterSpacing: '-0.02em', margin: '0 0 6px 0' }}>
               Welcome back, {user?.name?.split(' ')[0] || 'Driver'}
             </h1>
-            <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '1.1rem' }}>
+            <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.95rem' }}>
               Your refueling network is ready.
             </p>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="action-chip-scroll">
             
             {/* Voice AI Button */}
             <button
@@ -1720,6 +1721,18 @@ export default function CustomerDashboard() {
       />
 
       <EmergencySOS />
+
+      {/* Native-like Mobile Bottom Navigation & Action Drawer */}
+      <CustomerMobileNav 
+        onOpenGarage={() => setShowGarageModal(true)}
+        onOpenGreenPassport={() => setShowGreenPassportModal(true)}
+        onOpenDigitalPass={() => setShowDigitalPassModal(true)}
+        onOpenWallet={() => setShowWalletModal(true)}
+        onOpenFleet={() => setShowFleetModal(true)}
+        onOpenPasskey={() => setShowPasskeyModal(true)}
+        user={user}
+        logout={logout}
+      />
     </div>
   );
 }

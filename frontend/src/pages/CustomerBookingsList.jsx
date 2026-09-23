@@ -28,9 +28,10 @@ import {
   FileText
 } from 'lucide-react';
 import InvoiceModal from '../components/InvoiceModal';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 
 export default function CustomerBookingsList() {
-  const { user } = useContext(AuthContext);
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const [bookings, setBookings] = useState([]);
@@ -197,14 +198,8 @@ export default function CustomerBookingsList() {
   };
 
   return (
-    <div style={{ 
-      backgroundColor: '#050505', 
-      minHeight: '100vh', 
-      color: '#f8fafc', 
-      padding: '40px 32px 80px',
-      fontFamily: 'var(--font-main, Inter, sans-serif)'
-    }}>
-      <div style={{ maxWidth: '1240px', margin: '0 auto' }}>
+    <div className="responsive-page-container" style={{ fontFamily: 'var(--font-main, Inter, sans-serif)' }}>
+      <div className="responsive-page-inner">
 
         {/* Back Link Breadcrumb */}
         <Link 
@@ -331,8 +326,8 @@ export default function CustomerBookingsList() {
         {/* Telemetry Stats Dock */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
-          gap: '16px', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))', 
+          gap: '14px', 
           marginBottom: '28px' 
         }}>
           <div style={{
@@ -672,7 +667,7 @@ export default function CustomerBookingsList() {
           </div>
         ) : (
           /* Active Booking Cards Grid */
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
             {filteredBookings.map((b) => {
               const bookingDate = new Date(b.slotTime);
               const isUpcoming = ['confirmed', 'in-use', 'reserved'].includes(b.status?.toLowerCase());
@@ -1048,6 +1043,9 @@ export default function CustomerBookingsList() {
         onClose={() => setSelectedInvoiceBooking(null)}
         data={selectedInvoiceBooking}
       />
+
+      {/* Native-like Mobile Bottom Navigation */}
+      <CustomerMobileNav user={user} logout={logout} />
 
     </div>
   );

@@ -171,7 +171,8 @@ export default function LivePumping() {
 
 
   return (
-    <div style={{ padding: '2rem 1.5rem', maxWidth: '1100px', margin: '0 auto', color: '#f8fafc' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner" style={{ maxWidth: '1100px' }}>
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '24px' }}>
         <PageHeader 
@@ -379,6 +380,7 @@ export default function LivePumping() {
         )}
 
       </div>
+    </div>
     </div>
   );
 }

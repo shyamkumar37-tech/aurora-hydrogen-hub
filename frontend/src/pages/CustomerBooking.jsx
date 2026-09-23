@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
 import toast from 'react-hot-toast';
 import { ArrowLeft, MapPin, CheckCircle, Clock, Fuel, ArrowRight, QrCode, Fingerprint } from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
 import QRCode from 'react-qr-code';
 import PasskeyScannerModal from '../components/PasskeyScannerModal';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 
 export default function CustomerBooking() {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const preSelectedStationId = searchParams.get('station');
@@ -128,7 +131,7 @@ export default function CustomerBooking() {
     const displayId = `HYD-${(bookingObj._id || '').slice(-5).toUpperCase()}`;
     const slotDate = new Date(bookingObj.slotTime);
        return (
-      <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: 'var(--text-main)', padding: '48px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="responsive-page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ maxWidth: '440px', width: '100%', background: '#0A0A0B', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px', overflow: 'hidden' }}>
           
           <div style={{ padding: '32px', textAlign: 'center', background: 'rgba(16, 185, 129, 0.05)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -189,14 +192,15 @@ export default function CustomerBooking() {
           </div>
 
         </div>
+        <CustomerMobileNav user={user} logout={logout} />
       </div>
     );
   }
 
   // BOOKING FORM STATE
   return (
-    <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: 'var(--text-main)', padding: '48px 24px' }}>
-      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner" style={{ maxWidth: '640px' }}>
         
         <button 
           onClick={() => navigate(-1)} 
@@ -419,6 +423,8 @@ export default function CustomerBooking() {
           handleSubmit({ preventDefault: () => {} });
         }}
       />
+
+      <CustomerMobileNav user={user} logout={logout} />
     </div>
   );
 }

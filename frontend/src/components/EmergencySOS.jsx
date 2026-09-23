@@ -55,7 +55,7 @@ export default function EmergencySOS() {
 
   if (activeRequest) {
     return (
-      <div style={{ position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999 }}>
+      <div className="floating-fab-sos" style={{ zIndex: 9999 }}>
         <div style={{
           background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%)',
           color: '#fff',
@@ -166,8 +166,8 @@ export default function EmergencySOS() {
     <>
       <button 
         onClick={() => setOpen(true)}
+        className="floating-fab-sos"
         style={{ 
-          position: 'fixed', bottom: '32px', right: '32px', zIndex: 9998,
           height: '56px', borderRadius: '28px', padding: '0 24px',
           background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
           border: '1px solid rgba(255,255,255,0.2)',
