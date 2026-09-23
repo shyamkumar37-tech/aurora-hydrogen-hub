@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import api from '../api/api';
 import toast from 'react-hot-toast';
 import { ArrowLeft, MapPin, Clock, Droplets, Map, Navigation, ArrowRight } from 'lucide-react';
 import Skeleton from '../components/ui/Skeleton';
 import EmptyState from '../components/ui/EmptyState';
+import CustomerMobileNav from '../components/CustomerMobileNav';
 
 export default function StationDetailPublic() {
+  const { user, logout } = useContext(AuthContext);
   const { id } = useParams();
   const [station, setStation] = useState(null);
   const [dispensers, setDispensers] = useState([]);
@@ -50,9 +53,11 @@ export default function StationDetailPublic() {
 
   if (loading) {
     return (
-      <div style={{ padding: '48px', maxWidth: '1000px', margin: '0 auto', background: '#050505', minHeight: '100vh' }}>
-        <Skeleton height="80px" style={{ marginBottom: '24px' }} borderRadius="12px" />
-        <Skeleton height="300px" borderRadius="12px" />
+      <div className="responsive-page-container">
+        <div className="responsive-page-inner" style={{ maxWidth: '800px' }}>
+          <Skeleton height="80px" style={{ marginBottom: '24px' }} borderRadius="12px" />
+          <Skeleton height="300px" borderRadius="12px" />
+        </div>
       </div>
     );
   }
@@ -70,8 +75,8 @@ export default function StationDetailPublic() {
   const price = station.hydrogenPrice || station.pricePerKg || 82;
 
   return (
-    <div style={{ backgroundColor: '#050505', minHeight: '100vh', color: 'var(--text-main)', padding: '48px 24px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+    <div className="responsive-page-container">
+      <div className="responsive-page-inner" style={{ maxWidth: '800px' }}>
         
         {/* Navigation */}
         <button 
@@ -92,8 +97,8 @@ export default function StationDetailPublic() {
         </button>
 
         {/* Hero */}
-        <div style={{ marginBottom: '40px' }}>
-          <h1 style={{ fontSize: '3rem', fontWeight: '400', letterSpacing: '-0.02em', margin: '0 0 12px 0' }}>
+        <div style={{ marginBottom: '32px' }}>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 5vw, 3rem)', fontWeight: '400', letterSpacing: '-0.02em', margin: '0 0 12px 0' }}>
             {station.name}
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-muted)' }}>
@@ -143,8 +148,8 @@ export default function StationDetailPublic() {
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '40px' }}>
-          <Link to={`/customer/book?station=${station._id}`} className="btn btn-primary" style={{ flex: 2, padding: '20px', fontSize: '1.125rem', letterSpacing: '0.1em', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px', marginBottom: '40px', flexWrap: 'wrap' }}>
+          <Link to={`/customer/book?station=${station._id}`} className="btn btn-primary" style={{ flex: '1 1 220px', padding: '16px', fontSize: '1rem', letterSpacing: '0.05em', display: 'flex', justifyContent: 'center' }}>
             BOOK REFUELING SLOT
           </Link>
           <a 
@@ -152,7 +157,7 @@ export default function StationDetailPublic() {
             target="_blank"
             rel="noreferrer"
             className="btn btn-outline" 
-            style={{ flex: 1, padding: '20px', fontSize: '1.125rem', letterSpacing: '0.1em', display: 'flex', justifyContent: 'center' }}
+            style={{ flex: '1 1 180px', padding: '16px', fontSize: '1rem', letterSpacing: '0.05em', display: 'flex', justifyContent: 'center' }}
           >
             GET DIRECTIONS
           </a>
@@ -192,6 +197,7 @@ export default function StationDetailPublic() {
         </div>
 
       </div>
+      <CustomerMobileNav user={user} logout={logout} />
     </div>
   );
 }
