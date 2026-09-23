@@ -690,18 +690,41 @@ export default function Login() {
               </div>
             </div>
 
-            <div 
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '0.74rem',
-                color: '#94a3b8',
-                fontWeight: 500
-              }}
-            >
-              <span className="telemetry-indicator-pip" />
-              <span>Operational</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                onClick={handleReplayVideo}
+                className="mobile-only-replay-btn"
+                style={{
+                  background: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '12px',
+                  padding: '3px 8px',
+                  color: '#94a3b8',
+                  fontSize: '0.7rem',
+                  alignItems: 'center',
+                  gap: '4px',
+                  cursor: 'pointer'
+                }}
+                title="Watch intro video"
+              >
+                <RotateCcw size={11} />
+                <span>Intro</span>
+              </button>
+
+              <div 
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.74rem',
+                  color: '#94a3b8',
+                  fontWeight: 500
+                }}
+              >
+                <span className="telemetry-indicator-pip" />
+                <span>Operational</span>
+              </div>
             </div>
           </div>
 

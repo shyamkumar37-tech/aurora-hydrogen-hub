@@ -796,6 +796,10 @@ input:-webkit-autofill:active {
   box-sizing: border-box;
 }
 
+.mobile-only-replay-btn {
+  display: none !important;
+}
+
 /* ==========================================================================
    MOBILE & TABLET RESPONSIVE SYSTEM (< 960px)
    ========================================================================== */
@@ -803,65 +807,83 @@ input:-webkit-autofill:active {
   .auth-container {
     flex-direction: column !important;
     min-height: 100vh;
+    min-height: 100dvh;
+    background: #08090c;
+  }
+
+  /* Full screen intro video on mobile */
+  .auth-container.intro-mode .auth-hero {
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    display: flex !important;
+  }
+
+  /* Once intro ends or on standard auth pages (Register, Login, ForgotPassword):
+     Hide the squished top hero box completely so the login/register form takes the full mobile screen! */
+  .auth-hero {
+    display: none !important;
   }
 
   .auth-container.intro-mode .auth-hero {
-    min-height: 100vh !important;
-    height: 100vh !important;
-  }
-
-  .auth-hero {
-    flex: none !important;
-    width: 100% !important;
-    height: 190px !important;
-    padding: 16px 14px !important;
-    align-items: flex-start !important;
-    justify-content: flex-end !important;
-  }
-
-  .auth-hero h1 {
-    font-size: 1.35rem !important;
-    line-height: 1.2 !important;
-    margin-bottom: 4px !important;
-  }
-
-  .auth-hero p {
-    display: none !important;
-  }
-
-  .hero-post-video-content {
-    margin-bottom: 6px !important;
-    margin-top: auto !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    max-width: 100% !important;
-  }
-
-  .hero-feature-pills {
-    display: none !important;
+    display: flex !important;
   }
 
   .auth-form-side {
     flex: 1 !important;
     width: 100% !important;
-    min-height: auto !important;
-    padding: 20px 14px 44px 14px !important;
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+    padding: 16px 14px calc(24px + env(safe-area-inset-bottom, 16px)) 14px !important;
     border-left: none !important;
-    border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-top: none !important;
     box-shadow: none !important;
     background: #08090c !important;
-    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
   }
 
   .auth-console-card {
-    padding: 22px 16px !important;
-    max-width: 100% !important;
+    padding: 18px 16px !important;
+    max-width: 440px !important;
+    width: 100% !important;
     border-radius: 18px !important;
+    margin: auto 0 !important;
+    box-sizing: border-box !important;
+    background: rgba(14, 18, 28, 0.96) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
 
   .auth-card-glass {
-    padding: 24px 16px !important;
-    border-radius: 20px !important;
+    padding: 20px 16px !important;
+    border-radius: 18px !important;
+    max-width: 440px !important;
+    width: 100% !important;
+    margin: auto 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .segmented-control-item {
+    padding: 6px 4px !important;
+    font-size: 0.76rem !important;
+  }
+  .segmented-role-subtext {
+    font-size: 0.62rem !important;
+  }
+
+  .auth-cta-btn,
+  .google-auth-btn,
+  #passkey-signin-btn {
+    height: 42px !important;
+    font-size: 0.86rem !important;
+  }
+
+  .mobile-only-replay-btn {
+    display: inline-flex !important;
   }
 
   /* Intro mobile adaptations */
