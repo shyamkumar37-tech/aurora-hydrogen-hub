@@ -18,12 +18,12 @@ const FALLBACK_KEYS = [
 ].map(b => Buffer.from(b, 'base64').toString('utf8'));
 
 const GEMINI_KEYS = [
+  ...FALLBACK_KEYS,
   process.env.GEMINI_API_KEY,
   process.env.GEMINI_API_KEY_2,
   process.env.GEMINI_API_KEY_3,
-  process.env.GEMINI_API_KEY_4,
-  ...FALLBACK_KEYS
-].filter(Boolean);
+  process.env.GEMINI_API_KEY_4
+].filter(k => k && typeof k === 'string' && !k.toLowerCase().includes('dummy') && !k.toLowerCase().includes('placeholder') && k.length > 20);
 
 const UNIQUE_KEYS = [...new Set(GEMINI_KEYS)];
 

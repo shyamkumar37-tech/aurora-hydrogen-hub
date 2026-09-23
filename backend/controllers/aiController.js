@@ -16,14 +16,14 @@ const FALLBACK_KEYS = [
   'QVEuQWI4Uk42S1RYYkJqckw1Z0RXY2xlMUZCZUVXOFpCQm1KdHlvR3JwTHJCdjlpak5uS1E='
 ].map(b => Buffer.from(b, 'base64').toString('utf8'));
 
-// Key pool with automatic failover across all configured environment keys
+// Key pool with automatic failover, prioritizing embedded keys and filtering placeholders
 const GEMINI_KEYS = [
+  ...FALLBACK_KEYS,
   process.env.GEMINI_API_KEY,
   process.env.GEMINI_API_KEY_2,
   process.env.GEMINI_API_KEY_3,
-  process.env.GEMINI_API_KEY_4,
-  ...FALLBACK_KEYS
-].filter(Boolean);
+  process.env.GEMINI_API_KEY_4
+].filter(k => k && typeof k === 'string' && !k.toLowerCase().includes('dummy') && !k.toLowerCase().includes('placeholder') && k.length > 20);
 
 const UNIQUE_KEYS = [...new Set(GEMINI_KEYS)];
 
