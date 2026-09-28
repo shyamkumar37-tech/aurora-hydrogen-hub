@@ -17,13 +17,21 @@ import {
   Fingerprint,
   User,
   Cpu,
-  Activity
+  Activity,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import api from '../api/api';
 import toast from 'react-hot-toast';
 import OnboardingModal from '../components/OnboardingModal';
 import PasskeyScannerModal from '../components/PasskeyScannerModal';
 import { authenticatePasskey, isWebAuthnSupported } from '../utils/webAuthnUtils';
+import { 
+  startDispensingSound, 
+  updateDispensingAcousticPressure, 
+  stopDispensingSound 
+} from '../utils/h2AcousticEngine';
+
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -44,6 +52,19 @@ export default function Login() {
   const emailInputRef = useRef(null);
   const [videoEnded, setVideoEnded] = useState(false);
   const [videoProgress, setVideoProgress] = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+
+  const toggleSound = (e) => {
+    e.stopPropagation();
+    if (!soundEnabled) {
+      startDispensingSound(520);
+      setSoundEnabled(true);
+      toast('🔊 Cryogenic H2 Soundscape Engaged', { icon: '⚡', duration: 2500 });
+    } else {
+      stopDispensingSound();
+      setSoundEnabled(false);
+    }
+  };
 
   const handlePasskeyLogin = async () => {
     try {
@@ -65,6 +86,8 @@ export default function Login() {
     if (videoRef.current) {
       videoRef.current.pause();
     }
+    stopDispensingSound();
+    setSoundEnabled(false);
     setVideoEnded(true);
   };
 
@@ -75,6 +98,13 @@ export default function Login() {
     }
     setVideoEnded(false);
   };
+
+  // Cleanup ambient audio on unmount or navigation
+  useEffect(() => {
+    return () => {
+      stopDispensingSound();
+    };
+  }, []);
 
   // Keyboard shortcut: Space, Enter, or Escape skips directly to the login form
   useEffect(() => {
@@ -285,6 +315,12 @@ export default function Login() {
     }
   };
 
+  // Real-time telemetry calculations during 10-second intro fueling sequence
+  const livePressure = Math.min(700, Math.round(350 + (videoProgress / 100) * 350));
+  const liveFlowRate = (1.4 + Math.sin(videoProgress) * 0.15).toFixed(2);
+  const liveDispensed = ((videoProgress / 100) * 4.85).toFixed(2);
+  const liveTemp = (-39.2 + Math.cos(videoProgress) * 0.3).toFixed(1);
+
   return (
     <div className={`auth-container ${!videoEnded ? 'intro-mode' : ''}`}>
       {/* Hero Video Section: Full-screen during intro, docks to hero side upon completion */}
@@ -292,7 +328,20 @@ export default function Login() {
         className="auth-hero" 
         style={{ backgroundColor: '#07090e', position: 'relative' }}
       >
-        {/* Ambient Hydrogen Infrastructure Video with Cinematic Color Grading */}
+        {/* Hardware-Accelerated SVG Edge Sharpening & Optical Convolve Filter */}
+        <svg width="0" height="0" style={{ position: 'absolute', pointerEvents: 'none' }} aria-hidden="true">
+          <defs>
+            <filter id="video-edge-sharpen" x="0" y="0" width="100%" height="100%">
+              <feConvolveMatrix
+                order="3"
+                preserveAlpha="true"
+                kernelMatrix="0 -0.22 0 -0.22 1.88 -0.22 0 -0.22 0"
+              />
+            </filter>
+          </defs>
+        </svg>
+
+        {/* Ambient Hydrogen Infrastructure Video with Cinematic Color Grading & Optical Sharpening */}
         <video
           ref={videoRef}
           autoPlay
@@ -303,7 +352,12 @@ export default function Login() {
           onTimeUpdate={(e) => {
             const current = e.currentTarget.currentTime;
             const duration = e.currentTarget.duration || 1;
-            setVideoProgress((current / duration) * 100);
+            const progress = (current / duration) * 100;
+            setVideoProgress(progress);
+            if (soundEnabled) {
+              const currentPressure = Math.min(700, Math.round(350 + (progress / 100) * 350));
+              updateDispensingAcousticPressure(currentPressure);
+            }
           }}
           aria-label="Hydrogen station operations background video"
           style={{
@@ -314,7 +368,7 @@ export default function Login() {
             objectFit: 'cover',
             zIndex: 0,
             pointerEvents: 'none',
-            filter: 'contrast(1.18) brightness(0.96) saturate(1.16)',
+            filter: 'url(#video-edge-sharpen) contrast(1.18) brightness(0.96) saturate(1.16)',
             imageRendering: '-webkit-optimize-contrast',
             transform: 'translateZ(0)',
             WebkitBackfaceVisibility: 'hidden',
@@ -324,17 +378,60 @@ export default function Login() {
           <source src="/video_watermark_removed_max_quality.mp4" type="video/mp4" />
         </video>
 
+        {/* Filmic High-DPI Micro-Texture Overlay (Removes digital compression noise) */}
+        {!videoEnded && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px)',
+              backgroundSize: '4px 4px',
+              pointerEvents: 'none',
+              zIndex: 1,
+              opacity: 0.55
+            }}
+          />
+        )}
+
         {/* Cinematic Dual-Layer Optical Vignette & Compression Noise Mask */}
         {!videoEnded && (
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 42%, rgba(5, 8, 14, 0.48) 72%, rgba(3, 5, 10, 0.85) 100%), linear-gradient(to bottom, rgba(5, 8, 14, 0.4) 0%, transparent 18%, transparent 80%, rgba(4, 7, 12, 0.85) 100%)',
+              background: 'radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 38%, rgba(5, 8, 14, 0.48) 72%, rgba(3, 5, 10, 0.88) 100%), linear-gradient(to bottom, rgba(5, 8, 14, 0.5) 0%, transparent 16%, transparent 80%, rgba(4, 7, 12, 0.88) 100%)',
               pointerEvents: 'none',
-              zIndex: 1
+              zIndex: 2
             }}
           />
+        )}
+
+        {/* Cinematic 2.39:1 Anamorphic Top & Bottom Framing Bars */}
+        {!videoEnded && (
+          <>
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '24px',
+              background: 'linear-gradient(to bottom, #030508 75%, transparent 100%)',
+              borderBottom: '1px solid rgba(0, 210, 180, 0.14)',
+              zIndex: 3,
+              pointerEvents: 'none'
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: '36px',
+              background: 'linear-gradient(to top, #030508 80%, transparent 100%)',
+              borderTop: '1px solid rgba(0, 210, 180, 0.14)',
+              zIndex: 3,
+              pointerEvents: 'none'
+            }} />
+          </>
         )}
 
         {/* Post-Video Authentic Real Photograph: Aurora Hydrogen Bunk on Indian Highway */}
@@ -395,8 +492,8 @@ export default function Login() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '7px',
-                background: 'rgba(7, 11, 19, 0.82)',
-                border: '1px solid rgba(0, 210, 180, 0.35)',
+                background: 'rgba(7, 11, 19, 0.85)',
+                border: '1px solid rgba(0, 210, 180, 0.4)',
                 borderRadius: '20px',
                 padding: '5px 12px',
                 backdropFilter: 'blur(12px)',
@@ -405,7 +502,8 @@ export default function Login() {
                 fontSize: '11px',
                 fontWeight: '700',
                 letterSpacing: '0.08em',
-                fontFamily: 'var(--font-mono)'
+                fontFamily: 'var(--font-mono)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.6)'
               }}>
                 <span style={{ 
                   width: '6px', 
@@ -418,7 +516,7 @@ export default function Login() {
                 LIVE 4K • 60 FPS
               </div>
               <span style={{
-                color: 'rgba(255, 255, 255, 0.6)',
+                color: 'rgba(255, 255, 255, 0.7)',
                 fontSize: '11px',
                 letterSpacing: '0.08em',
                 fontWeight: '600',
@@ -428,43 +526,81 @@ export default function Login() {
               </span>
             </div>
 
-            {/* Bottom Left: Cryogenic Telemetry Readout */}
+            {/* Bottom Left: Cryogenic Live Mission-Control Telemetry */}
             <div style={{
               position: 'absolute',
-              bottom: '26px',
+              bottom: '42px',
               left: '32px',
               zIndex: 5,
               display: 'flex',
               alignItems: 'center',
-              gap: '18px',
+              gap: '16px',
               pointerEvents: 'none',
               fontFamily: 'var(--font-mono)',
-              fontSize: '11px'
+              fontSize: '11px',
+              background: 'rgba(7, 11, 19, 0.78)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '8px',
+              padding: '6px 14px',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.6)'
             }}>
-              <span style={{ color: 'rgba(255,255,255,0.48)' }}>
-                PRESSURE: <strong style={{ color: '#00d2b4' }}>700 BAR</strong>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                PRESSURE: <strong style={{ color: '#00d2b4' }}>{livePressure} BAR</strong>
               </span>
-              <span style={{ color: 'rgba(255,255,255,0.48)' }}>
-                CRYO TEMP: <strong style={{ color: '#38bdf8' }}>-39.2°C</strong>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                FLOW: <strong style={{ color: '#38bdf8' }}>{liveFlowRate} kg/min</strong>
               </span>
-              <span style={{ color: 'rgba(255,255,255,0.48)' }}>
-                PURITY: <strong style={{ color: '#10b981' }}>99.997% H2</strong>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                DISPENSED: <strong style={{ color: '#10b981' }}>{liveDispensed} kg</strong>
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                CRYO TEMP: <strong style={{ color: '#60a5fa' }}>{liveTemp}°C</strong>
               </span>
             </div>
 
-            {/* Top Right: Skip to Login Button */}
-            <button
-              type="button"
-              onClick={skipToLogin}
-              className="skip-intro-btn-responsive"
-              title="Skip directly to login (or press Esc/Space)"
-            >
-              <span>Skip to Login</span>
-              <ArrowRight size={14} color="#00d2b4" />
-            </button>
+            {/* Top Right Controls Group */}
+            <div style={{
+              position: 'absolute',
+              top: '28px',
+              right: '32px',
+              zIndex: 10,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              {/* Cryogenic Audio Sound Engine Toggle */}
+              <button
+                type="button"
+                onClick={toggleSound}
+                className="skip-intro-btn-responsive"
+                style={{
+                  position: 'static',
+                  borderColor: soundEnabled ? '#00d2b4' : 'rgba(255, 255, 255, 0.2)',
+                  background: soundEnabled ? 'rgba(0, 210, 180, 0.16)' : 'rgba(10, 14, 22, 0.85)',
+                  color: soundEnabled ? '#00d2b4' : '#ffffff'
+                }}
+                title="Toggle 700-Bar Cryogenic Sound Engine"
+              >
+                {soundEnabled ? <Volume2 size={14} color="#00d2b4" /> : <VolumeX size={14} color="#94a3b8" />}
+                <span>{soundEnabled ? 'Sound: ON' : 'Sound: OFF'}</span>
+              </button>
+
+              {/* Skip to Login Button */}
+              <button
+                type="button"
+                onClick={skipToLogin}
+                className="skip-intro-btn-responsive"
+                style={{ position: 'static' }}
+                title="Skip directly to login (or press Esc/Space)"
+              >
+                <span>Skip to Login</span>
+                <ArrowRight size={14} color="#00d2b4" />
+              </button>
+            </div>
 
             {/* Bottom Center: Responsive Helper Badge */}
-            <div className="intro-helper-badge-responsive">
+            <div className="intro-helper-badge-responsive" style={{ bottom: '42px' }}>
               <span className="desktop-key-hint">Press <kbd>Esc</kbd> or <kbd>Space</kbd> to skip intro</span>
               <span className="mobile-tap-hint">Tap anywhere to skip intro</span>
             </div>
@@ -484,7 +620,7 @@ export default function Login() {
                 height: '100%',
                 width: `${videoProgress}%`,
                 background: 'linear-gradient(90deg, #00d2b4, #38bdf8)',
-                boxShadow: '0 0 8px rgba(0, 210, 180, 0.8)',
+                boxShadow: '0 0 10px rgba(0, 210, 180, 0.9)',
                 transition: 'width 0.1s linear'
               }} />
             </div>
