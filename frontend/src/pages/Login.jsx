@@ -43,6 +43,7 @@ export default function Login() {
   const videoRef = useRef(null);
   const emailInputRef = useRef(null);
   const [videoEnded, setVideoEnded] = useState(false);
+  const [videoProgress, setVideoProgress] = useState(0);
 
   const handlePasskeyLogin = async () => {
     try {
@@ -291,7 +292,7 @@ export default function Login() {
         className="auth-hero" 
         style={{ backgroundColor: '#07090e', position: 'relative' }}
       >
-        {/* Ambient Hydrogen Infrastructure Video */}
+        {/* Ambient Hydrogen Infrastructure Video with Cinematic Color Grading */}
         <video
           ref={videoRef}
           autoPlay
@@ -299,6 +300,11 @@ export default function Login() {
           playsInline
           preload="auto"
           onEnded={() => setVideoEnded(true)}
+          onTimeUpdate={(e) => {
+            const current = e.currentTarget.currentTime;
+            const duration = e.currentTarget.duration || 1;
+            setVideoProgress((current / duration) * 100);
+          }}
           aria-label="Hydrogen station operations background video"
           style={{
             position: 'absolute',
@@ -308,11 +314,28 @@ export default function Login() {
             objectFit: 'cover',
             zIndex: 0,
             pointerEvents: 'none',
-            filter: 'brightness(1.12) contrast(1.05)'
+            filter: 'contrast(1.18) brightness(0.96) saturate(1.16)',
+            imageRendering: '-webkit-optimize-contrast',
+            transform: 'translateZ(0)',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden'
           }}
         >
           <source src="/video_watermark_removed_max_quality.mp4" type="video/mp4" />
         </video>
+
+        {/* Cinematic Dual-Layer Optical Vignette & Compression Noise Mask */}
+        {!videoEnded && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 42%, rgba(5, 8, 14, 0.48) 72%, rgba(3, 5, 10, 0.85) 100%), linear-gradient(to bottom, rgba(5, 8, 14, 0.4) 0%, transparent 18%, transparent 80%, rgba(4, 7, 12, 0.85) 100%)',
+              pointerEvents: 'none',
+              zIndex: 1
+            }}
+          />
+        )}
 
         {/* Post-Video Authentic Real Photograph: Aurora Hydrogen Bunk on Indian Highway */}
         <div
@@ -345,7 +368,7 @@ export default function Login() {
           />
         )}
 
-        {/* Intro Mode Controls (Visible while video is playing) */}
+        {/* Intro Mode Controls & High-Tech 4K HUD Overlay */}
         {!videoEnded && (
           <>
             {/* Click/tap target across video so tapping anywhere on mobile skips the intro */}
@@ -356,6 +379,78 @@ export default function Login() {
               aria-label="Tap to skip intro"
               style={{ position: 'absolute', inset: 0, zIndex: 4, cursor: 'pointer' }} 
             />
+
+            {/* Top Left: 4K Live Telemetry Feed Badge */}
+            <div style={{
+              position: 'absolute',
+              top: '28px',
+              left: '32px',
+              zIndex: 5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              pointerEvents: 'none'
+            }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '7px',
+                background: 'rgba(7, 11, 19, 0.82)',
+                border: '1px solid rgba(0, 210, 180, 0.35)',
+                borderRadius: '20px',
+                padding: '5px 12px',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                color: '#00d2b4',
+                fontSize: '11px',
+                fontWeight: '700',
+                letterSpacing: '0.08em',
+                fontFamily: 'var(--font-mono)'
+              }}>
+                <span style={{ 
+                  width: '6px', 
+                  height: '6px', 
+                  borderRadius: '50%', 
+                  background: '#00d2b4', 
+                  boxShadow: '0 0 10px #00d2b4', 
+                  display: 'inline-block' 
+                }} />
+                LIVE 4K • 60 FPS
+              </div>
+              <span style={{
+                color: 'rgba(255, 255, 255, 0.6)',
+                fontSize: '11px',
+                letterSpacing: '0.08em',
+                fontWeight: '600',
+                fontFamily: 'var(--font-mono)'
+              }}>
+                STATION #04 // DISPENSER BAY 02
+              </span>
+            </div>
+
+            {/* Bottom Left: Cryogenic Telemetry Readout */}
+            <div style={{
+              position: 'absolute',
+              bottom: '26px',
+              left: '32px',
+              zIndex: 5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '18px',
+              pointerEvents: 'none',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px'
+            }}>
+              <span style={{ color: 'rgba(255,255,255,0.48)' }}>
+                PRESSURE: <strong style={{ color: '#00d2b4' }}>700 BAR</strong>
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.48)' }}>
+                CRYO TEMP: <strong style={{ color: '#38bdf8' }}>-39.2°C</strong>
+              </span>
+              <span style={{ color: 'rgba(255,255,255,0.48)' }}>
+                PURITY: <strong style={{ color: '#10b981' }}>99.997% H2</strong>
+              </span>
+            </div>
 
             {/* Top Right: Skip to Login Button */}
             <button
@@ -372,6 +467,26 @@ export default function Login() {
             <div className="intro-helper-badge-responsive">
               <span className="desktop-key-hint">Press <kbd>Esc</kbd> or <kbd>Space</kbd> to skip intro</span>
               <span className="mobile-tap-hint">Tap anywhere to skip intro</span>
+            </div>
+
+            {/* Bottom Edge: Slim Neon Cyan Playback Timeline */}
+            <div style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              width: '100%',
+              height: '3px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              zIndex: 6,
+              pointerEvents: 'none'
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${videoProgress}%`,
+                background: 'linear-gradient(90deg, #00d2b4, #38bdf8)',
+                boxShadow: '0 0 8px rgba(0, 210, 180, 0.8)',
+                transition: 'width 0.1s linear'
+              }} />
             </div>
           </>
         )}
