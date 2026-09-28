@@ -509,6 +509,8 @@ export default function TripPlanner() {
               <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; OpenStreetMap'
+                detectRetina={true}
+                maxZoom={19}
               />
 
               {routeResult?.waypoints && (

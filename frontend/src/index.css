@@ -82,6 +82,16 @@
   padding: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-optical-sizing: auto;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--surface-chassis);
@@ -90,14 +100,26 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
-  image-rendering: -webkit-optimize-contrast;
 }
 
-/* High-DPI Vector and Canvas Crisp Precision */
+/* High-DPI Vector, Canvas, and Retina Crisp Precision */
 canvas, svg, img {
   shape-rendering: geometricPrecision;
   text-rendering: geometricPrecision;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
+
+/* Prevent subpixel jitter, fractional border blur and raster bleeding */
+.glass-panel,
+.instrument-panel,
+.premium-panel,
+.card {
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);

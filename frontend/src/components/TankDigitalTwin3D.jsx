@@ -61,9 +61,26 @@ export default function TankDigitalTwin3D({ isOpen, onClose, currentPressure = 6
     let localRotX = rotation.x;
 
     const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const cx = canvas.width / 2;
-      const cy = canvas.height / 2;
+      // High-DPI Native Retina Pixel Calibration
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      const rect = canvas.getBoundingClientRect();
+      const displayWidth = rect.width > 0 ? rect.width : 850;
+      const displayHeight = rect.height > 0 ? rect.height : 360;
+
+      const targetPixelWidth = Math.round(displayWidth * dpr);
+      const targetPixelHeight = Math.round(displayHeight * dpr);
+
+      if (canvas.width !== targetPixelWidth || canvas.height !== targetPixelHeight) {
+        canvas.width = targetPixelWidth;
+        canvas.height = targetPixelHeight;
+      }
+
+      ctx.save();
+      ctx.scale(dpr, dpr);
+      ctx.clearRect(0, 0, displayWidth, displayHeight);
+
+      const cx = displayWidth / 2;
+      const cy = displayHeight / 2;
 
       if (isRotating && !isDraggingRef.current) {
         localRotY += 0.008;
@@ -238,6 +255,7 @@ export default function TankDigitalTwin3D({ isOpen, onClose, currentPressure = 6
       ctx.arc(centerProj.px, centerProj.py, 160 * centerProj.scale, 0, Math.PI * 2);
       ctx.fill();
 
+      ctx.restore();
       animationFrameId = requestAnimationFrame(render);
     };
 
@@ -353,9 +371,7 @@ export default function TankDigitalTwin3D({ isOpen, onClose, currentPressure = 6
         >
           <canvas
             ref={canvasRef}
-            width={850}
-            height={360}
-            style={{ width: '100%', height: '100%', display: 'block' }}
+            style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none' }}
           />
 
           {/* Floating Live Telemetry HUD Badges */}

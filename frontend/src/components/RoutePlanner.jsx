@@ -558,6 +558,7 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   maxZoom={19}
+                  detectRetina={true}
                 />
               )}
               {mapLayer === 'satellite' && (
@@ -565,6 +566,7 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
                   url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
                   attribution='&copy; Esri, Earthstar Geographics'
                   maxZoom={18}
+                  detectRetina={true}
                 />
               )}
               {mapLayer === 'dark' && (
@@ -572,6 +574,7 @@ export default function RoutePlanner({ activeVehicle, stations = [], onClose, on
                   url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
                   attribution='&copy; Esri &copy; OpenStreetMap'
                   maxZoom={16}
+                  detectRetina={true}
                 />
               )}
               <MapBoundsUpdater bounds={mapBounds} />
