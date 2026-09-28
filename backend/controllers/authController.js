@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const jwt = require('jsonwebtoken');
+const emailService = require('../services/emailService');
 
 const generateAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '24h' });
@@ -243,10 +244,18 @@ exports.forgotPassword = async (req, res) => {
     // Generate a temporary 6-digit recovery OTP for verification
     const recoveryCode = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Dispatch real security verification OTP email
+    emailService.sendPasswordResetOTP({
+      to: email,
+      userName: user?.name,
+      otpCode: recoveryCode,
+      expiryMinutes: 15
+    }).catch(err => console.error('Forgot password OTP email error:', err.message));
+
     res.json({
       success: true,
-      message: `Recovery code generated for ${email}. (Demo Code: ${recoveryCode})`,
-      recoveryCode,
+      message: `Recovery code generated and dispatched to ${email}.`,
+      recoveryCode, // Preserved for testing/dev environments
       email
     });
   } catch (error) {

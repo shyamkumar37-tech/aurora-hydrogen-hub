@@ -5,6 +5,7 @@ const Booking = require('../models/Booking');
 const User = require('../models/User');
 const WalletTransaction = require('../models/WalletTransaction');
 const Transaction = require('../models/Transaction');
+const emailService = require('../services/emailService');
 
 exports.getCheckoutDetails = async (req, res) => {
   try {
@@ -164,6 +165,22 @@ exports.processCheckoutPayment = async (req, res) => {
       });
       const savedTx = await tx.save();
 
+      // Dispatch automated Tax Invoice & Receipt Email
+      if (user.email) {
+        emailService.sendInvoiceEmail({
+          to: user.email,
+          userName: user.name,
+          invoiceNumber: savedTx._id,
+          stationName: booking.station?.name,
+          dispenserNozzle: booking.dispenser?.nozzleType,
+          amount: finalAmount,
+          quantityKg: 5.0,
+          pricePerKg: pricePerKg,
+          paymentMethod: 'Hydrogen Wallet',
+          transactionDate: savedTx.createdAt
+        }).catch(err => console.error('Invoice email error:', err.message));
+      }
+
       return res.json({
         success: true,
         message: 'Payment completed successfully via Hydrogen Wallet!',
@@ -193,6 +210,22 @@ exports.processCheckoutPayment = async (req, res) => {
       const methodLabel = paymentMethod === 'upi' 
         ? 'Direct UPI (GPay/PhonePe)' 
         : (paymentMethod === 'stripe' ? 'Stripe Gateway' : (paymentMethod === 'razorpay' ? 'Razorpay' : 'Card Gateway'));
+
+      // Dispatch automated Tax Invoice & Receipt Email
+      if (user.email) {
+        emailService.sendInvoiceEmail({
+          to: user.email,
+          userName: user.name,
+          invoiceNumber: savedTx._id,
+          stationName: booking.station?.name,
+          dispenserNozzle: booking.dispenser?.nozzleType,
+          amount: finalAmount,
+          quantityKg: 5.0,
+          pricePerKg: pricePerKg,
+          paymentMethod: methodLabel,
+          transactionDate: savedTx.createdAt
+        }).catch(err => console.error('Invoice email error:', err.message));
+      }
 
       return res.json({
         success: true,

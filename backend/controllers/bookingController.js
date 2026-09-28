@@ -3,6 +3,8 @@ const Station = require('../models/Station');
 const Dispenser = require('../models/Dispenser');
 const Notification = require('../models/Notification');
 const MaintenanceLog = require('../models/MaintenanceLog');
+const emailService = require('../services/emailService');
+const smsService = require('../services/smsService');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -91,6 +93,30 @@ exports.createBooking = async (req, res) => {
       });
 
       req.io.to(`user_${req.user._id}`).emit('notification', newNotification);
+    }
+
+    // Real-world communications: Dispatch confirmation email and SMS
+    if (req.user?.email) {
+      emailService.sendBookingConfirmation({
+        to: req.user.email,
+        userName: req.user.name,
+        bookingId: createdBooking._id,
+        stationName: stationDoc.name,
+        stationAddress: stationDoc.address || stationDoc.locationName,
+        slotTime: createdBooking.slotTime,
+        dispenserNozzle: dispenserDoc?.nozzleType,
+        hydrogenPrice: stationDoc.pricePerKg || stationDoc.hydrogenPrice
+      }).catch(err => console.error('Booking confirmation email error:', err.message));
+    }
+
+    if (req.user?.phone) {
+      smsService.sendBookingSMS({
+        to: req.user.phone,
+        userName: req.user.name,
+        bookingId: createdBooking._id,
+        stationName: stationDoc.name,
+        slotTime: createdBooking.slotTime
+      }).catch(err => console.error('Booking confirmation SMS error:', err.message));
     }
 
     res.status(201).json({

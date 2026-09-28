@@ -1,6 +1,7 @@
 const EmergencyRequest = require('../models/EmergencyRequest');
 const Station = require('../models/Station');
 const Notification = require('../models/Notification');
+const smsService = require('../services/smsService');
 
 exports.requestAssistance = async (req, res) => {
   try {
@@ -20,6 +21,17 @@ exports.requestAssistance = async (req, res) => {
     });
 
     await request.save();
+
+    // Dispatch real-time emergency alert via SMS / WhatsApp to dispatch team or user phone
+    const targetPhone = process.env.EMERGENCY_DISPATCH_PHONE || req.user.phone;
+    if (targetPhone) {
+      smsService.sendEmergencyAlertSMS({
+        to: targetPhone,
+        requestType: type,
+        location: request.location,
+        userPhone: req.user.phone
+      }).catch(err => console.error('Emergency SMS alert error:', err.message));
+    }
 
     // Alert staff via websocket (could be broadcasted to a generic 'staff' room)
     if (req.io) {
