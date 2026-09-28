@@ -18,10 +18,15 @@ import {
   Activity,
   Layers,
   ChevronRight,
-  X
+  X,
+  Volume2,
+  ShieldCheck,
+  FileCheck2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import InstantQrCheckInModal from '../components/InstantQrCheckInModal';
+import SafetyProtocolModal from '../components/admin/SafetyProtocolModal';
+import TankerDeliveryModal from '../components/admin/TankerDeliveryModal';
 
 export default function StaffDashboard() {
   const { selectedStationId, activeStation, activeShift, fetchStationData } = useOutletContext();
@@ -36,7 +41,34 @@ export default function StaffDashboard() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrCodeInput, setQrCodeInput] = useState('');
   const [walkInModalOpen, setWalkInModalOpen] = useState(false);
-  
+  const [safetyModalOpen, setSafetyModalOpen] = useState(false);
+  const [tankerModalOpen, setTankerModalOpen] = useState(false);
+  const [safetyCertified, setSafetyCertified] = useState(false);
+
+  // Audio bay caller announcement using native SpeechSynthesis
+  const handleCallVehicle = (booking) => {
+    if (!('speechSynthesis' in window)) {
+      toast.error('Voice synthesizer not supported on this browser device.');
+      return;
+    }
+    const customerName = booking?.user?.name || 'Customer';
+    const vehicleNumber = booking?.vehicleNumber || booking?.user?.vehicleNumber || '';
+    const dispenserName = booking?.dispenser?.name || `Dispenser ${booking?.dispenser?.nozzleType || '1'}`;
+    const announcement = `Attention please. ${customerName} ${vehicleNumber ? 'with vehicle ' + vehicleNumber : ''}. Please proceed to ${dispenserName} for hydrogen refueling.`;
+    
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(announcement);
+      utterance.rate = 0.95;
+      utterance.pitch = 1.05;
+      window.speechSynthesis.speak(utterance);
+      toast.success(`📢 P.A. Broadcast: Calling ${customerName} to ${dispenserName}`, { icon: '🎙️' });
+    } catch (err) {
+      console.error(err);
+      toast.error('Could not broadcast speech announcement');
+    }
+  };
+
   // Walk-in form state
   const [walkInData, setWalkInData] = useState({
     customerName: '',
@@ -233,6 +265,46 @@ export default function StaffDashboard() {
           >
             <Zap size={18} />
             <span>Walk-In Refueling</span>
+          </button>
+
+          <button
+            onClick={() => setSafetyModalOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 18px',
+              borderRadius: '12px',
+              background: safetyCertified ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.12)',
+              border: `1px solid ${safetyCertified ? 'rgba(16, 185, 129, 0.4)' : 'rgba(245, 158, 11, 0.35)'}`,
+              color: safetyCertified ? '#34d399' : '#fbbf24',
+              fontWeight: '700',
+              cursor: 'pointer',
+              fontSize: '0.875rem'
+            }}
+          >
+            <ShieldCheck size={18} />
+            <span>{safetyCertified ? 'Safety: Certified' : 'Daily Safety Checklist'}</span>
+          </button>
+
+          <button
+            onClick={() => setTankerModalOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 18px',
+              borderRadius: '12px',
+              background: 'rgba(99, 102, 241, 0.12)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              color: '#818cf8',
+              fontWeight: '700',
+              cursor: 'pointer',
+              fontSize: '0.875rem'
+            }}
+          >
+            <Truck size={18} />
+            <span>Inward Tanker Log</span>
           </button>
 
           <button
@@ -486,25 +558,48 @@ export default function StaffDashboard() {
                     </div>
                   </div>
 
-                  <Link
-                    to="/staff/bookings"
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '6px 12px',
-                      borderRadius: '8px',
-                      background: 'rgba(56, 189, 248, 0.12)',
-                      border: '1px solid rgba(56, 189, 248, 0.3)',
-                      color: '#38bdf8',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
-                      textDecoration: 'none'
-                    }}
-                  >
-                    <span>Process</span>
-                    <ChevronRight size={14} />
-                  </Link>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      onClick={() => handleCallVehicle(b)}
+                      title="Broadcast P.A. Voice Call to Station Bay"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        background: 'rgba(245, 158, 11, 0.12)',
+                        border: '1px solid rgba(245, 158, 11, 0.3)',
+                        color: '#fbbf24',
+                        fontSize: '0.75rem',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <Volume2 size={14} />
+                      <span>Call Bay</span>
+                    </button>
+
+                    <Link
+                      to="/staff/bookings"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        background: 'rgba(56, 189, 248, 0.12)',
+                        border: '1px solid rgba(56, 189, 248, 0.3)',
+                        color: '#38bdf8',
+                        fontSize: '0.75rem',
+                        fontWeight: '700',
+                        textDecoration: 'none'
+                      }}
+                    >
+                      <span>Process</span>
+                      <ChevronRight size={14} />
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
@@ -708,6 +803,27 @@ export default function StaffDashboard() {
           </div>
         </div>
       )}
+
+      {/* 5-Point Daily Safety Audit Protocol Modal */}
+      <SafetyProtocolModal
+        isOpen={safetyModalOpen}
+        onClose={() => setSafetyModalOpen(false)}
+        stationName={activeStation?.name}
+        onProtocolCertified={() => setSafetyCertified(true)}
+      />
+
+      {/* Cryogenic Tube-Trailer Inward Transfer Modal */}
+      <TankerDeliveryModal
+        isOpen={tankerModalOpen}
+        onClose={() => setTankerModalOpen(false)}
+        stationId={selectedStationId}
+        stationName={activeStation?.name}
+        inventoryId={inventory?._id}
+        onDeliveryLogged={() => {
+          fetchDashboardData();
+          if (fetchStationData) fetchStationData();
+        }}
+      />
 
     </div>
   );

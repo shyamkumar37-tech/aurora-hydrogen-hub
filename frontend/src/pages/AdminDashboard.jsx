@@ -18,7 +18,9 @@ import {
   Users,
   Terminal,
   ShieldCheck,
-  Leaf
+  Leaf,
+  FileSpreadsheet,
+  Sparkles
 } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import toast from 'react-hot-toast';
@@ -31,6 +33,8 @@ import UserRoleManager from '../components/admin/UserRoleManager';
 import AuditForensicsViewer from '../components/admin/AuditForensicsViewer';
 import PredictiveMaintenanceHub from '../components/admin/PredictiveMaintenanceHub';
 import ESGRevenueForecasting from '../components/admin/ESGRevenueForecasting';
+import EODSettlementModal from '../components/admin/EODSettlementModal';
+import AILogisticsForecasterModal from '../components/admin/AILogisticsForecasterModal';
 
 const AdminDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -40,7 +44,7 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [maintenanceLogs, setMaintenanceLogs] = useState([]);
 
-  // 7 Enterprise Admin Feature Modal States
+  // Enterprise Admin Feature Modal States
   const [showSCADA, setShowSCADA] = useState(false);
   const [showTariffs, setShowTariffs] = useState(false);
   const [showLogistics, setShowLogistics] = useState(false);
@@ -48,6 +52,8 @@ const AdminDashboard = () => {
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showPredictiveAI, setShowPredictiveAI] = useState(false);
   const [showESGForecast, setShowESGForecast] = useState(false);
+  const [showEODSettlement, setShowEODSettlement] = useState(false);
+  const [showAILogistics, setShowAILogistics] = useState(false);
 
 
   // Dynamic activity trend data calculated from bookings
@@ -287,6 +293,56 @@ const AdminDashboard = () => {
               <span style={{ fontSize: '11px', color: '#a1a1aa' }}>Tax Credits & Ledger</span>
             </div>
           </button>
+
+          <button 
+            type="button"
+            onClick={() => setShowEODSettlement(true)}
+            style={{
+              background: 'rgba(236, 72, 153, 0.08)',
+              border: '1px solid rgba(236, 72, 153, 0.3)',
+              borderRadius: '14px',
+              padding: '14px 16px',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              textAlign: 'left'
+            }}
+          >
+            <div style={{ background: 'rgba(236, 72, 153, 0.2)', padding: '8px', borderRadius: '10px' }}>
+              <FileSpreadsheet size={18} color="#ec4899" />
+            </div>
+            <div>
+              <span style={{ fontSize: '13px', fontWeight: '700', display: 'block' }}>EOD Settlement</span>
+              <span style={{ fontSize: '11px', color: '#a1a1aa' }}>Reconciliation & CSV</span>
+            </div>
+          </button>
+
+          <button 
+            type="button"
+            onClick={() => setShowAILogistics(true)}
+            style={{
+              background: 'rgba(56, 189, 248, 0.08)',
+              border: '1px solid rgba(56, 189, 248, 0.3)',
+              borderRadius: '14px',
+              padding: '14px 16px',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              textAlign: 'left'
+            }}
+          >
+            <div style={{ background: 'rgba(56, 189, 248, 0.2)', padding: '8px', borderRadius: '10px' }}>
+              <Sparkles size={18} color="#38bdf8" />
+            </div>
+            <div>
+              <span style={{ fontSize: '13px', fontWeight: '700', display: 'block' }}>AI Dispatcher</span>
+              <span style={{ fontSize: '11px', color: '#a1a1aa' }}>Stock Depletion Forecast</span>
+            </div>
+          </button>
         </div>
 
         <div className="stats-grid">
@@ -414,7 +470,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* 7 NEXT-GEN ENTERPRISE ADMIN MODALS */}
+        {/* ENTERPRISE ADMIN MODALS */}
         {showSCADA && <SCADAControlMatrix onClose={() => setShowSCADA(false)} />}
         {showTariffs && <DynamicTariffEngine onClose={() => setShowTariffs(false)} />}
         {showLogistics && <SupplyChainLogistics onClose={() => setShowLogistics(false)} />}
@@ -422,6 +478,8 @@ const AdminDashboard = () => {
         {showAuditLogs && <AuditForensicsViewer onClose={() => setShowAuditLogs(false)} />}
         {showPredictiveAI && <PredictiveMaintenanceHub onClose={() => setShowPredictiveAI(false)} />}
         {showESGForecast && <ESGRevenueForecasting onClose={() => setShowESGForecast(false)} />}
+        {showEODSettlement && <EODSettlementModal isOpen={showEODSettlement} onClose={() => setShowEODSettlement(false)} />}
+        {showAILogistics && <AILogisticsForecasterModal isOpen={showAILogistics} onClose={() => setShowAILogistics(false)} />}
       </>
   );
 };
