@@ -736,7 +736,7 @@ export default function InstantQrCheckInModal({
                               }}
                             >
                               <Zap size={14} />
-                              Simulate Pass Detection ({queueBookings[0].user?.name?.split(' ')[0] || 'Driver'})
+                              Instant Pass Detection ({queueBookings[0].user?.name?.split(' ')[0] || 'Driver'})
                             </button>
                           )}
                         </div>

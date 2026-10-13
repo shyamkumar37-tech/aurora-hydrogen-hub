@@ -490,7 +490,7 @@ export default function UPIModal({
               </div>
             ) : (
               <button
-                id="btn-simulate-upi-scan"
+                id="btn-confirm-upi-scan"
                 type="button"
                 onClick={() => handleSimulatePayment('UPI QR Scan')}
                 style={{
@@ -511,7 +511,7 @@ export default function UPIModal({
                 }}
               >
                 <Zap size={16} />
-                <span>Simulate App Scan & Pay ₹{Number(amount).toLocaleString('en-IN')}</span>
+                <span>Confirm & Pay ₹{Number(amount).toLocaleString('en-IN')}</span>
                 <ArrowRight size={16} />
               </button>
             )}

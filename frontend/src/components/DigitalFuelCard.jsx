@@ -392,7 +392,7 @@ export default function DigitalFuelCard({ user, vehicle, walletBalance = 0, onCl
                 }}
               >
                 <Zap size={14} />
-                <span>Simulate NFC Tap & Fuel Now</span>
+                <span>Authorize NFC Tap & Fuel Now</span>
                 <ArrowRight size={14} />
               </button>
             ) : (

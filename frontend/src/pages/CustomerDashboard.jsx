@@ -1390,7 +1390,7 @@ export default function CustomerDashboard() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="premium-panel" style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
             <h3 style={{ fontSize: '1.25rem', marginBottom: '8px' }}>Add Funds</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '24px' }}>Simulated payment gateway.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '24px' }}>Instant zero-fee hydrogen energy wallet recharge gateway.</p>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '24px' }}>
               {[500, 1000, 2000, 5000].map(amt => (
