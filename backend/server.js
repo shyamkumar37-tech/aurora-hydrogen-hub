@@ -147,6 +147,34 @@ app.use('/api/support', supportRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/fleet', fleetRoutes);
 
+// 404 Catch-All Handler for API Routes
+app.use((req, res, next) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
+// Centralized Error Handling Middleware
+app.use((err, req, res, next) => {
+  logger.error(`[SYSTEM ERROR] ${err.message}`, { stack: err.stack, url: req.originalUrl });
+  const status = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  res.status(status).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production' && status === 500
+      ? 'An internal operational error occurred. Please try again.'
+      : err.message || 'Internal Server Error'
+  });
+});
+
+// Process-level unhandled exception and rejection protection
+process.on('unhandledRejection', (reason, promise) => {
+  logger.warn('Unhandled Promise Rejection caught safely:', { reason: reason?.message || reason });
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error('Uncaught Exception caught safely:', { error: err.message, stack: err.stack });
+});
 
 if (process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 5000;

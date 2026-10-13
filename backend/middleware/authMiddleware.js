@@ -11,6 +11,9 @@ exports.protect = async (req, res, next) => {
       if (!req.user) {
         return res.status(401).json({ message: 'User not found or session expired. Please log in again.' });
       }
+      if (req.user.isSuspended) {
+        return res.status(403).json({ message: 'Account is suspended. Please contact station administration.' });
+      }
       return next();
     } catch (error) {
       return res.status(401).json({ message: 'Not authorized, token invalid or expired' });
