@@ -196,7 +196,7 @@ export default function CustomerDashboard() {
         setOnlineStationsCount(online);
         
         const myBookings = bkResult.status === 'fulfilled' ? (bkResult.value?.data || []) : [];
-        setBookings(myBookings.filter(b => b.status === 'pending' || b.status === 'confirmed'));
+        setBookings(myBookings.filter(b => ['pending', 'confirmed', 'active', 'reserved'].includes(b.status)));
 
         setAnalytics(anResult.status === 'fulfilled' ? anResult.value?.data : {
           totalHydrogenKg: 0,
@@ -972,7 +972,7 @@ export default function CustomerDashboard() {
                 {nextBooking ? (
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flex: 1 }}>
                     <div>
-                      <div style={{ color: 'var(--accent-cyan)', fontSize: '0.875rem', marginBottom: '8px', fontWeight: '500' }}>Reservation {nextBooking._id.slice(-9).toUpperCase()}</div>
+                      <div style={{ color: 'var(--accent-cyan)', fontSize: '0.875rem', marginBottom: '8px', fontWeight: '500' }}>Reservation {nextBooking._id?.slice(-9)?.toUpperCase() || 'RESERVED'}</div>
                       <div style={{ fontSize: '1.75rem', marginBottom: '16px' }}>{nextBooking.station?.name || 'Hydrogen Hub'}</div>
                       <div style={{ display: 'flex', gap: '24px' }}>
                         <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>

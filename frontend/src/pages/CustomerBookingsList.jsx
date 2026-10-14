@@ -25,7 +25,8 @@ import {
   Filter,
   Layers,
   ChevronRight,
-  FileText
+  FileText,
+  CreditCard
 } from 'lucide-react';
 import InvoiceModal from '../components/InvoiceModal';
 import CustomerMobileNav from '../components/CustomerMobileNav';
@@ -88,7 +89,7 @@ export default function CustomerBookingsList() {
   const filteredBookings = bookings.filter(b => {
     const status = b.status?.toLowerCase() || '';
     if (activeTab === 'upcoming') {
-      if (status !== 'confirmed' && status !== 'in-use' && status !== 'reserved') return false;
+      if (!['confirmed', 'in-use', 'reserved', 'pending', 'active'].includes(status)) return false;
     } else if (activeTab === 'completed') {
       if (status !== 'completed') return false;
     } else if (activeTab === 'cancelled') {
@@ -106,7 +107,7 @@ export default function CustomerBookingsList() {
   });
 
   // Calculate Metrics
-  const upcomingCount = bookings.filter(b => ['confirmed', 'in-use', 'reserved'].includes(b.status?.toLowerCase())).length;
+  const upcomingCount = bookings.filter(b => ['confirmed', 'in-use', 'reserved', 'pending', 'active'].includes(b.status?.toLowerCase())).length;
   const completedCount = bookings.filter(b => b.status?.toLowerCase() === 'completed').length;
   const cancelledCount = bookings.filter(b => ['cancelled', 'no-show'].includes(b.status?.toLowerCase())).length;
   const estimatedCO2Saved = (completedCount * 4.8).toFixed(1);
@@ -131,6 +132,27 @@ export default function CustomerBookingsList() {
         }}>
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px #34d399' }} />
           Confirmed
+        </span>
+      );
+    }
+    if (normalized === 'pending') {
+      return (
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '5px',
+          padding: '4px 10px',
+          borderRadius: '20px',
+          fontSize: '0.72rem',
+          fontWeight: 700,
+          background: 'rgba(245, 158, 11, 0.15)',
+          color: '#fbbf24',
+          border: '1px solid rgba(245, 158, 11, 0.3)',
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase'
+        }}>
+          <Clock size={12} />
+          Pending / Reserved
         </span>
       );
     }
@@ -670,7 +692,7 @@ export default function CustomerBookingsList() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '20px' }}>
             {filteredBookings.map((b) => {
               const bookingDate = new Date(b.slotTime);
-              const isUpcoming = ['confirmed', 'in-use', 'reserved'].includes(b.status?.toLowerCase());
+              const isUpcoming = ['confirmed', 'in-use', 'reserved', 'pending', 'active'].includes(b.status?.toLowerCase());
 
               return (
                 <div 
@@ -710,7 +732,7 @@ export default function CustomerBookingsList() {
                           color: '#64748b',
                           letterSpacing: '0.04em'
                         }}>
-                          ID: #{b._id.slice(-6).toUpperCase()}
+                          ID: #{b._id?.slice(-6)?.toUpperCase() || 'N/A'}
                         </span>
                         <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: '#ffffff', margin: '2px 0 0 0' }}>
                           {b.station?.name || 'Aurora Cryogenic Station'}
@@ -1016,7 +1038,7 @@ export default function CustomerBookingsList() {
               letterSpacing: '0.05em',
               marginBottom: '14px' 
             }}>
-              #{selectedQRBooking._id.slice(-8).toUpperCase()}
+              #{selectedQRBooking?._id?.slice(-8)?.toUpperCase() || 'REF'}
             </div>
 
             <div style={{
